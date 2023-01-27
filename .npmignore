@@ -2,7 +2,7 @@ node_modules
 test
 src
 .babelrc.js
-.eslintrc.js
+.eslintrc.cjs
 scripts
 coverage
 docs

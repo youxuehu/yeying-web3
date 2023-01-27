@@ -8,3 +8,7 @@ This is a secondary encapsulation web3 javascript library to interactive with ye
 1. Create and update distributed digital identity on yeying network
 2. Deploy and submit smart contract to yeying network
 
+
+How to compile contract?
+1. Install solc with `npm install solc --save-dev`
+
