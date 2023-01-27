@@ -1,73 +1,69 @@
 {
-  "name": "@yeying/yeying-web3",
-  "version": "0.0.1",
-  "author": "kobofare",
-  "description": "A web3 javascript library",
-  "type": "module",
-  "main": "dist/yeying-web3.umd.js",
-  "module": "dist/yeying-web3.esm.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yeying-community/yeying-web3.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yeying-community/yeying-web3/issues"
-  },
-  "homepage": "https://github.com/yeying-community/yeying-web3#readme",
-  "scripts": {
-    "dev": "rollup -w --environment NODE_ENV:development -c script/rollup.config.dev.js",
-    "build": "rollup --environment NODE_ENV:development -c script/rollup.config.prod.js",
-    "x": "npm --no-git-tag-version version major",
-    "y": "npm --no-git-tag-version version minor",
-    "z": "npm --no-git-tag-version version patch",
-    "lint": "eslint src",
-    "fix": "npm run lint --fix",
-    "commit": "git-cz",
-    "test": "jest",
-    "test:c": "jest --coverage",
-    "prepublish": "npm run build",
-    "pub": "npm publish --access=public",
-    "pub:x": "npm run x && npm publish --access=public",
-    "pub:y": "npm run y && npm publish --access=public",
-    "pub:z": "npm run z && npm publish --access=public"
-  },
-  "keywords": [
-    "web3",
-    "did",
-    "blockchain"
-  ],
-  "license": "ISC",
-  "devDependencies": {
-    "@babel/core": "^7.20.2",
-    "@babel/preset-env": "^7.20.2",
-    "@commitlint/cli": "^17.2.0",
-    "@commitlint/config-conventional": "^17.2.0",
-    "@rollup/plugin-alias": "^4.0.2",
-    "@rollup/plugin-babel": "^6.0.2",
-    "@rollup/plugin-commonjs": "^23.0.2",
-    "@rollup/plugin-eslint": "^9.0.1",
-    "@rollup/plugin-json": "^5.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-replace": "^5.0.1",
-    "@rollup/plugin-terser": "^0.1.0",
-    "commitizen": "^4.2.5",
-    "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^8.27.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react": "^7.31.10",
-    "husky": "^8.0.2",
-    "jest": "^29.3.1",
-    "rollup": "^3.3.0",
-    "rollup-jest": "^3.1.0",
-    "rollup-plugin-clear": "^2.0.7",
-    "rollup-plugin-filesize": "^9.1.2",
-    "rollup-plugin-livereload": "^2.0.5",
-    "rollup-plugin-serve": "^2.0.1"
-  },
-  "jest": {
-    "preset": "rollup-jest"
-  }
+    "name": "@yeying/yeying-web3",
+    "version": "0.0.1",
+    "author": "",
+    "description": "A web3 javascript library",
+    "main": "dist/lib/index.js",
+    "module": "dist/es/index.js",
+    "browser": "dist/umd/index.js",
+    "type": "module",
+    "scripts": {
+        "dev": "rollup -c -w",
+        "build": "NODE_ENV=production rollup -c",
+        "test": "jest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yeying-community/yeying-web3.git"
+    },
+    "keywords": [],
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/yeying-community/yeying-web3/issues"
+    },
+    "jest": {
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js"
+        ],
+        "transform": {
+            "^.+\\.tsx?$": "ts-jest"
+        },
+        "testMatch": [
+            "<rootDir>/test/**/?(*.)(spec|test).ts?(x)"
+        ]
+    },
+    "homepage": "https://github.com/yeying-community/yeying-web3#readme",
+    "devDependencies": {
+        "@rollup/plugin-babel": "^6.0.3",
+        "@rollup/plugin-commonjs": "^23.0.3",
+        "@rollup/plugin-eslint": "^9.0.1",
+        "@rollup/plugin-json": "^6.0.0",
+        "@rollup/plugin-node-resolve": "^15.0.1",
+        "@rollup/plugin-terser": "^0.1.0",
+        "@rollup/plugin-typescript": "^10.0.1",
+        "@types/jest": "^29.2.3",
+        "@typescript-eslint/eslint-plugin": "^5.45.0",
+        "babel-jest": "^29.3.1",
+        "cli-select": "^1.1.2",
+        "inquirer": "^9.1.4",
+        "jest": "^29.3.1",
+        "rollup": "^3.5.0",
+        "rollup-plugin-polyfill-node": "^0.11.0",
+        "solc": "^0.8.17",
+        "ts-jest": "^29.0.3",
+        "tslib": "^2.4.1",
+        "typescript": "^4.9.3",
+        "yargs": "^17.6.2"
+    },
+    "dependencies": {
+        "@ethersproject/contracts": "^5.7.0",
+        "@ethersproject/providers": "^5.7.2",
+        "@ethersproject/wallet": "^5.7.0",
+        "@types/elliptic": "^6.4.14",
+        "did-jwt": "^6.11.0",
+        "did-resolver": "^4.0.1",
+        "ethers": "^5.7.2"
+    }
 }
