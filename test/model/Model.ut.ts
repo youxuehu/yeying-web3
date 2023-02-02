@@ -8,10 +8,9 @@ describe('Enum model', function () {
             let name2 = DidEventName[DidEventName.DidDelegateChanged]
             expect(name2).toBe(name1)
             expect(name1 in DidEventName).toBeTruthy()
-            expect(isEvent('DIDDelegateChanged', [DidEventName.DidDelegateChanged, DidEventName.DidAttributeChanged]))
-            .toBeTruthy()
-            expect(isEvent('DidDelegateChange', [DidEventName.DidDelegateChanged, DidEventName.DidAttributeChanged]))
-            .toBeFalsy()
+            const events = [DidEventName.DidDelegateChanged, DidEventName.DidAttributeChanged]
+            expect(isEvent('DIDDelegateChanged', events)).toBeTruthy()
+            expect(isEvent('DidDelegateChange', events)).toBeFalsy()
         })
     })
 })

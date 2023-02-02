@@ -12,3 +12,7 @@ This is a secondary encapsulation web3 javascript library to interactive with ye
 How to compile contract?
 1. Install solc with `npm install solc --save-dev`
 
+
+Run integration test?
+npm test -- -u --testMatch="**/test/**.it.ts"
+
