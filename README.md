@@ -14,5 +14,5 @@ How to compile contract?
 
 
 Run integration test?
-npm test -- -u --testMatch="**/test/**.it.ts"
+1. Run command=npm test -- -u --testMatch="**/test/**.it.ts"
 

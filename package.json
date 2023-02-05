@@ -1,5 +1,4 @@
-{
-    "name": "@yeying/yeying-web3",
+{ "name": "@yeying-community/yeying-web3",
     "version": "0.0.1",
     "author": "",
     "description": "A web3 javascript library",
