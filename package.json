@@ -1,13 +1,12 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.3",
-  "author": "",
+  "version": "0.0.4",
+  "author": "kobofare",
   "description": "A web3 javascript library",
-  "main": "dist/lib/index.js",
-  "module": "dist/es/index.js",
-  "browser": "dist/umd/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "type": "module",
-  "files": ["dist/lib/**/*"],
+  "files": ["dist/**/*"],
   "scripts": {
     "dev": "rollup -c -w",
     "build": "NODE_ENV=production rollup -c",

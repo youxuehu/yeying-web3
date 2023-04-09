@@ -13,19 +13,13 @@ export default {
     input: 'src/index.ts',
     output: [
         {
-            file: 'dist/lib/index.js',
+            file: 'dist/index.js',
             format: 'cjs',
         },
         {
-            file: 'dist/es/index.js',
-            format: 'esm',
-        },
-        {
-            file: 'dist/umd/index.js',
-            format: 'umd',
-            // script标签的形式引入时，全局变量的模块名
-            name: 'utils',
-        },
+            file: 'dist/index.mjs',
+            format: 'es',
+        }
     ],
     onwarn(warning, warn) {
         if (warning.code === 'THIS_IS_UNDEFINED') return;
