@@ -7,6 +7,7 @@
   "module": "dist/es/index.js",
   "browser": "dist/umd/index.js",
   "type": "module",
+  "files": ["dist/lib/**/*"],
   "scripts": {
     "dev": "rollup -c -w",
     "build": "NODE_ENV=production rollup -c",
