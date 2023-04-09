@@ -1,6 +1,6 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "",
   "description": "A web3 javascript library",
   "main": "dist/lib/index.js",
