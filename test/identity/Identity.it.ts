@@ -5,6 +5,7 @@ import {Identity} from '../../src/account/Identity'
 import {BlockAddress} from '../../src'
 import {DelegateType} from '../../src/model/Erc1056Event'
 import {Es256kSigner} from '../../src/account/signature/Es256kSigner'
+import {wordlists} from "ethers";
 
 jest.setTimeout(60000)
 describe('Did identity', function () {
@@ -21,7 +22,7 @@ describe('Did identity', function () {
 
     describe('Crud', () => {
         it('Create a did', () => {
-            const blockchain = Blockchain.createBlockAddress()
+            const blockchain = Blockchain.createBlockAddress(NetworkType.YeYing, wordlists.zh_cn)
             console.log(blockchain)
             const identifier = constructIdentifier(NetworkType.YeYing, blockchain.publicKey)
             console.log(identifier)
