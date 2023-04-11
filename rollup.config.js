@@ -6,6 +6,7 @@ import terser from '@rollup/plugin-terser';
 import eslint from '@rollup/plugin-eslint';
 import typescript from '@rollup/plugin-typescript';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
+import del from 'rollup-plugin-delete'
 
 const isPro = process.env.NODE_ENV === 'production'
 
@@ -14,10 +15,6 @@ export default {
     output: [
         {
             file: 'dist/index.js',
-            format: 'cjs',
-        },
-        {
-            file: 'dist/index.mjs',
             format: 'es',
         }
     ],
@@ -26,6 +23,7 @@ export default {
         warn(warning);
     },
     plugins: [
+        del({targets: 'dist/*'}),
         nodeResolve(),  // 这样 Rollup 能找到 `ms`
         commonjs(), // 这样 Rollup 能转换 `ms` 为一个ES模块
         eslint({
