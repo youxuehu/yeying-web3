@@ -33,7 +33,7 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testMatch": [
-      "<rootDir>/test/**/?(*.)(ut).ts?(x)"
+      "<rootDir>/test/**/?(*.)(ut|it).ts?(x)"
     ]
   },
   "homepage": "https://github.com/yeying-community/yeying-web3#readme",

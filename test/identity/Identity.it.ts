@@ -1,5 +1,5 @@
 import {constructIdentifier, parseIdentifier} from '../../src/tool/string'
-import {NetworkType} from '../../src/model/Constant'
+import {NetworkType, ProviderType} from '../../src/model/Constant'
 import {Blockchain} from '../../src/contract/Blockchain'
 import {Identity} from '../../src/account/Identity'
 import {BlockAddress} from '../../src'
@@ -35,7 +35,7 @@ describe('Did identity', function () {
 
     describe('Jwt', () => {
         it('Sign with jwt', async () => {
-            const provider = Blockchain.getDefaultProvider()
+            const provider = Blockchain.getDefaultProvider(ProviderType.ipc)
             const s = Blockchain.getDefaultSigner(account.privateKey)
             const contract = Blockchain.getDefaultContract(s)
 

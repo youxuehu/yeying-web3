@@ -1,5 +1,6 @@
 import {Account, Chain} from '../src/index'
 import {BlockAddress} from '../src/model/BlockAddress'
+import {ProviderType} from "../src/model/Constant";
 
 jest.setTimeout(30000)
 describe('index', () => {
@@ -15,11 +16,22 @@ describe('index', () => {
     })
 
     describe('account', () => {
-        it('instantiate', async () => {
+        it('instantiate with ipc', async () => {
             const signer = Chain.getDefaultSigner(blockAddress.privateKey)
             const account = new Account({
                 identifier: blockAddress.identifier,
-                provider: Chain.getDefaultProvider(),
+                provider: Chain.getDefaultProvider(ProviderType.ipc),
+                signer: signer,
+                contract: Chain.getDefaultContract(signer)
+            })
+            expect(await account.getOwner()).toBe('0xB49Fedf23ccdB02C84A1649A4e44929Add12e977')
+        })
+
+        it('instantiate with http', async () => {
+            const signer = Chain.getDefaultSigner(blockAddress.privateKey)
+            const account = new Account({
+                identifier: blockAddress.identifier,
+                provider: Chain.getDefaultProvider(ProviderType.http, "http://127.0.0.1:9004"),
                 signer: signer,
                 contract: Chain.getDefaultContract(signer)
             })

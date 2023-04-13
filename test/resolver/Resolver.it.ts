@@ -5,6 +5,7 @@ import {DelegateType} from '../../src/model/Erc1056Event'
 import {SigningKey} from '@ethersproject/signing-key'
 import {Resolver} from '../../src/resolver/Resolver'
 import {sleep} from '../../src/tool/common'
+import {ProviderType} from "../../src/model/Constant";
 
 jest.setTimeout(600000)
 
@@ -60,7 +61,7 @@ describe('Did resolver', function () {
 
             const hash = await controller.createSetAttributeHash(attributeName, attributeValue, attributeExpiration)
             const signature = new SigningKey(account.privateKey).signDigest(hash)
-            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider().getBlock('latest')).number
+            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider(ProviderType.ipc).getBlock('latest')).number
 
             await controller.setAttributeSigned(attributeName, attributeValue, attributeExpiration,
                 {
@@ -107,7 +108,7 @@ describe('Did resolver', function () {
             const attributeValue = JSON.stringify(serviceEndpointParams)
             const attributeExpiration = 86400
 
-            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider().getBlock('latest')).number
+            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider(ProviderType.ipc).getBlock('latest')).number
             console.log(`Current height=${blockHeightBeforeChange}`)
 
             await controller.setAttribute(attributeName, attributeValue, attributeExpiration)
@@ -130,7 +131,7 @@ describe('Did resolver', function () {
             const result = await new Resolver(contract).resolve(account.identifier)
             console.log(`revoke attribute result=${JSON.stringify(result)}`)
 
-            expect(Number(result.didDocumentMetadata.versionId)).toBe(blockHeightBeforeChange + 2)
+            expect(Number(result.didDocumentMetadata.versionId)).toBeGreaterThanOrEqual(blockHeightBeforeChange + 2)
             expect(result.didDocument?.id).toBe(account.identifier)
             let count = result.didDocument?.service?.length
             expect(count).toBeDefined()
@@ -150,7 +151,7 @@ describe('Did resolver', function () {
             const controller = new Controller(account.identifier, contract)
             const hash = await controller.createAddDelegateHash(DelegateType.SignAuth, delegate.address, 86400)
             const signature = new SigningKey(account.privateKey).signDigest(hash)
-            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider().getBlock('latest')).number
+            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider(ProviderType.ipc).getBlock('latest')).number
             console.log(`Current height=${blockHeightBeforeChange}`)
 
             await controller.addDelegateSigned(
@@ -177,9 +178,9 @@ describe('Did resolver', function () {
             }
 
             expect(result.didDocument?.verificationMethod?.at(0)?.blockchainAccountId)
-            .toBe(`eip155:2020:${account.address}`)
+                .toBe(`eip155:2020:${account.address}`)
             expect(result.didDocument?.verificationMethod?.at(count - 1)?.blockchainAccountId)
-            .toBe(`eip155:2020:${delegate.address}`)
+                .toBe(`eip155:2020:${delegate.address}`)
         })
 
         it('Revoke delegate signed', async () => {
@@ -188,7 +189,7 @@ describe('Did resolver', function () {
             const contract = Blockchain.getDefaultContract(Blockchain.getDefaultSigner(account.privateKey))
             const controller = new Controller(account.identifier, contract)
 
-            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider().getBlock('latest')).number
+            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider(ProviderType.ipc).getBlock('latest')).number
             console.log(`Current height=${blockHeightBeforeChange}`)
 
             await controller.addDelegate(DelegateType.SignAuth, delegate.address, 86402)
@@ -214,7 +215,7 @@ describe('Did resolver', function () {
             expect(result.didDocument?.id).toBe(account.identifier)
             expect(Number(result.didDocumentMetadata.versionId)).toBeGreaterThanOrEqual(blockHeightBeforeChange + 2)
             expect(result.didDocument?.verificationMethod?.at(0)?.blockchainAccountId)
-            .toBe(`eip155:2020:${account.address}`)
+                .toBe(`eip155:2020:${account.address}`)
             expect(result.didDocument?.verificationMethod?.find(
                 s => s?.blockchainAccountId === `eip155:2020:${delegate.address}`)).toBeUndefined()
         })

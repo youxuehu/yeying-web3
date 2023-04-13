@@ -2,6 +2,12 @@ export enum NetworkType {
     YeYing = 2020
 }
 
+export enum ProviderType {
+    http = 0,
+    ws = 1,
+    ipc = 2,
+}
+
 export enum AlgorithmType {
     ES256K = 0
 }

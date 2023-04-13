@@ -1,7 +1,7 @@
 import {Identity} from './account/Identity'
 import {Blockchain} from './contract/Blockchain';
 
-export {NetworkType} from './model/Constant';
+export {NetworkType, ProviderType} from './model/Constant';
 export {Configuration} from './account/Configuration'
 export {BlockAddress} from './model/BlockAddress'
 

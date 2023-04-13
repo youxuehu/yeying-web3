@@ -6,7 +6,7 @@ import {Provider} from '@ethersproject/providers'
 import {ethers, Signer, utils, Wordlist} from 'ethers'
 import os from 'os'
 import {Contract, ContractFactory} from '@ethersproject/contracts'
-import {DeployedDidContract, NetworkType} from '../model/Constant'
+import {DeployedDidContract, NetworkType, ProviderType} from '../model/Constant'
 import {DidRegistry} from './DidRegistry.json'
 import {constructIdentifier} from '../tool/string'
 
@@ -32,12 +32,21 @@ export class Blockchain {
         }
     }
 
-    static getDefaultProvider(ipc?: string): Provider {
-        return new ethers.providers.IpcProvider(ipc || `${os.homedir()}/eth/yeying/data/geth.ipc`)
+    static getDefaultProvider(type: ProviderType, url?: string): Provider {
+        switch (type) {
+            case ProviderType.http:
+                return new ethers.providers.JsonRpcProvider(url || 'https://www.yeying.pub')
+            case ProviderType.ipc:
+                return new ethers.providers.IpcProvider(url || `${os.homedir()}/eth/yeying/data/geth.ipc`);
+            case ProviderType.ws:
+                return new ethers.providers.WebSocketProvider(url || 'ws://www.yeying.pub');
+            default:
+                throw new Error(`Invalid provider type: ${type}`);
+        }
     }
 
-    static getDefaultSigner(privateKey: string, ipc?: string): Signer {
-        return new ethers.Wallet(privateKey, Blockchain.getDefaultProvider(ipc))
+    static getDefaultSigner(privateKey: string, type: ProviderType = ProviderType.ipc, url?: string): Signer {
+        return new ethers.Wallet(privateKey, Blockchain.getDefaultProvider(type, url))
     }
 
     static getDefaultContract(signer: Signer, networkType?: NetworkType, registry?: string): Contract {

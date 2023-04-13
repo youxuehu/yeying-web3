@@ -4,6 +4,7 @@ import {BlockAddress} from "../../src/model/BlockAddress"
 import {Resolver} from "../../src/resolver/Resolver"
 import {SigningKey} from '@ethersproject/signing-key'
 import {sleep} from "../../src/tool/common";
+import {ProviderType} from "../../src/model/Constant";
 
 jest.setTimeout(600000);
 
@@ -56,7 +57,7 @@ describe('Contract Controller', () => {
             console.log(`Current owner=${currentOwner}`)
             const owner = currentOwner === account2.address ? account2 : account3;
             const newOwner = currentOwner === account2.address ? account3 : account2;
-            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider().getBlock('latest')).number
+            const blockHeightBeforeChange = (await Blockchain.getDefaultProvider(ProviderType.ipc).getBlock('latest')).number
             console.log(`Current height=${blockHeightBeforeChange}`)
 
             const receipt = await controller.setOwner(newOwner.address, Blockchain.getDefaultSigner(owner.privateKey));
