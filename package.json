@@ -1,11 +1,12 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "yeying.community@gmail.com",
   "description": "A web3 library",
   "main": "dist/bundle.cjs.js",
   "module": "dist/bundle.esm.js",
   "browser": "dist/bundle.umd.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
