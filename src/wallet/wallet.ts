@@ -33,7 +33,6 @@ function extractBlockAddressFromWallet(networkType: NetworkType, wallet: HDNodeW
         identifier: constructIdentifier(networkType, wallet.publicKey)
     }
 
-    console.log(`${JSON.stringify(wallet.mnemonic)}`)
     let mnemonic = wallet.mnemonic
     if (mnemonic !== null) {
         return {
