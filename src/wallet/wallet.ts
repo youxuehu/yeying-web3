@@ -1,5 +1,5 @@
 import {BlockAddress, Language, Mnemonic, NetworkType} from "./model";
-import {computeAddress, toBeHex, wordlists, HDNodeWallet, defaultPath, Wallet} from "ethers";
+import {computeAddress, toBeHex, wordlists, HDNodeWallet, defaultPath, Wallet, Wordlist} from "ethers";
 
 export function constructIdentifier(network: NetworkType, publicKey: string): string {
     return `did:ethr:${toBeHex(network)}:${publicKey}`;
@@ -11,7 +11,7 @@ export function fromMnemonic(mnemonic: Mnemonic, networkType = NetworkType.YeYin
 }
 
 export function createRandom(networkType = NetworkType.YeYing, language: Language = Language.ZH_CN, password: string = "", path: string = defaultPath): BlockAddress {
-    let wordlist
+    let wordlist: Wordlist
     switch (language) {
         case Language.ZH_CN:
             wordlist = wordlists['zh_cn']
