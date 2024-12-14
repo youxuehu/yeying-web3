@@ -1,10 +1,4 @@
-import {Identity} from './account/Identity'
-import {Blockchain} from './contract/Blockchain';
+import {createRandom, fromMnemonic} from "./wallet/wallet";
+import {Language, NetworkType} from "./wallet/model";
 
-export {NetworkType, ProviderType} from './model/Constant';
-export {Configuration} from './account/Configuration'
-export {BlockAddress} from './model/BlockAddress'
-
-// https://rollupjs.org/guide/en/#outputexports
-export const Account = Identity
-export const Chain = Blockchain
+export const Wallet = {createRandom, fromMnemonic, NetworkType, Language}
