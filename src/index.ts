@@ -6,7 +6,9 @@ import {
     updateIdentity, verifyIdentity
 } from "./wallet/identity";
 
-export const Identity = {
+export {Identity, IdentityTemplate} from "./wallet/model";
+
+export const Wallet = {
     createBlockAddress,
     recoveryFromMnemonic,
     createIdentity,
