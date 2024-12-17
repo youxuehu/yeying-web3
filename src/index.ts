@@ -1,4 +1,18 @@
-import {createRandom, fromMnemonic} from "./wallet/wallet";
-import {Language, NetworkType} from "./wallet/model";
+import {
+    createBlockAddress,
+    createIdentity,
+    decryptBlockAddress, encryptBlockAddress,
+    recoveryFromMnemonic, signIdentity,
+    updateIdentity, verifyIdentity
+} from "./wallet/identity";
 
-export const Wallet = {createRandom, fromMnemonic, NetworkType, Language}
+export const Identity = {
+    createBlockAddress,
+    recoveryFromMnemonic,
+    createIdentity,
+    updateIdentity,
+    signIdentity,
+    verifyIdentity,
+    decryptBlockAddress,
+    encryptBlockAddress,
+}
