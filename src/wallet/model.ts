@@ -1,29 +1,39 @@
-export enum NetworkType {
-    YeYing = 2020
-}
-export enum Language {
-    EN_US = 'en-US',
-    ZH_CN = 'zh-CN',
+import {
+    IdentityApplicationExtend,
+    IdentityMetadata,
+    IdentityOrganizationExtend,
+    IdentityPersonalExtend,
+    IdentityServiceExtend
+} from "../yeying/api/common/message";
+import {ApplicationCodeEnum, IdentityCodeEnum, NetworkTypeEnum} from "../yeying/api/common/code";
+import {toBeHex} from "ethers";
+
+
+export interface Identity {
+    metadata: IdentityMetadata
+    blockAddress: string
+    extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend,
+    signature: string
 }
 
-export interface BlockAddress {
-    identifier: string
-    mnemonic?: Mnemonic
-    address: string
-    privateKey: string
-    publicKey: string
+export interface IdentityTemplate {
+    parent: string
+    code: IdentityCodeEnum
+    name: string
+    description: string
+    avatar: string
+    extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
 }
 
-export interface Mnemonic {
-    readonly phrase: string
-    readonly path: string
-    readonly locale: string
-    readonly password: string
+export function convertApplicationCodeFrom(code: string) {
+    const v = ApplicationCodeEnum[code as keyof typeof ApplicationCodeEnum];
+    return v !== undefined ? v : ApplicationCodeEnum.APPLICATION_CODE_UNKNOWN
 }
 
-export interface IdentityAddress {
-    identifier: string
-    address: string
-    publicKey: string
-    networkType: NetworkType
+export function convertApplicationCodeEnumTo(code: ApplicationCodeEnum) {
+    return ApplicationCodeEnum[code] || ApplicationCodeEnum[ApplicationCodeEnum.APPLICATION_CODE_UNKNOWN]
+}
+
+export function constructIdentifier(network: NetworkTypeEnum, publicKey: string): string {
+    return `did:ethr:${toBeHex(network)}:${publicKey}`;
 }
