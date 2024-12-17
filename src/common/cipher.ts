@@ -1,5 +1,4 @@
 import elliptic from "elliptic"
-import BN from "bn.js"
 import {CipherTypeEnum} from "../yeying/api/common/code";
 
 function isBrowser(): boolean {
@@ -118,12 +117,7 @@ export async function verify(publicKey: string, data: Uint8Array, signature: str
     const ec = new elliptic.ec("secp256k1")
     const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
     const hashBytes = await computeHash(data)
-    const buffer = Buffer.from(signature, "hex")
-    return pubKeyEc.verify(hashBytes, {
-        r: new BN(buffer.subarray(0, 32), "be"),
-        s: new BN(buffer.subarray(32, 64), "be"),
-        recoveryParam: buffer[64]
-    })
+    return pubKeyEc.verify(new Uint8Array(hashBytes), signature)
 }
 
 export async function sign(privateKey: string, data: Uint8Array) {
@@ -131,9 +125,5 @@ export async function sign(privateKey: string, data: Uint8Array) {
     const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
     const hashBytes = await computeHash(data)
     const signature = keyPair.sign(new Uint8Array(hashBytes), {canonical: true})
-    const r = signature.r.toArrayLike(Buffer, "be", 32)
-    const s = signature.s.toArrayLike(Buffer, "be", 32)
-    // @ts-ignore
-    const v = Buffer.from([signature.recoveryParam])
-    return Buffer.concat([r, s, v]).toString("hex")
+    return signature.toDER('hex')
 }
