@@ -107,15 +107,19 @@ export async function createIdentity(password: string, template: IdentityTemplat
     }
 
     identity.signature = await signIdentity(blockAddress.privateKey, identity)
+    console.log(identity.signature)
     return identity
 }
 
 export async function verifyIdentity(identity: Identity) {
-    return await verify(fromDidToPublicKey(identity.metadata.did), serializeIdentity(identity), identity.signature)
+    const publicKey = fromDidToPublicKey(identity.metadata.did)
+    const bytes = serializeIdentity(identity)
+    return await verify(publicKey, bytes, identity.signature)
 }
 
 export async function signIdentity(privateKey: string, identity: Identity) {
-    return await sign(privateKey, serializeIdentity(identity))
+    const bytes = serializeIdentity(identity)
+    return await sign(privateKey, bytes)
 }
 
 function serializeIdentity(identity: Identity): Uint8Array {

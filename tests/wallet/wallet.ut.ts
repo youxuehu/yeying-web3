@@ -81,7 +81,9 @@ describe("Identity", () => {
             })
         }
         const identity = await createIdentity(password, template)
-        expect(verifyIdentity(identity)).toBeTruthy()
+        console.log(`identity=${JSON.stringify(identity, null, 2)}`)
+        const success = await verifyIdentity(identity)
+        expect(success).toBeTruthy()
     })
 
 })
