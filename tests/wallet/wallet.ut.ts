@@ -13,8 +13,8 @@ import {
     SecurityAlgorithm
 } from "../../src/yeying/api/common/message";
 import {ApplicationCodeEnum, CipherTypeEnum, IdentityCodeEnum, ServiceCodeEnum} from "../../src/yeying/api/common/code";
-import {encodeBase64, IdentityTemplate} from "../../src/wallet/model";
-import {generateIv} from "../../src/common/cipher";
+import {IdentityTemplate} from "../../src/wallet/model";
+import {encodeBase64, generateIv} from "../../src/common/cipher";
 
 
 describe('BlockAddress', () => {
@@ -24,15 +24,15 @@ describe('BlockAddress', () => {
         expect(blockAddress.address.length).toEqual(42)
     })
 
-    it('encrypt and decrypt', () => {
+    it('encrypt and decrypt', async () => {
         const blockAddress1 = createBlockAddress()
         const algorithm = SecurityAlgorithm.create({
             type: CipherTypeEnum.CIPHER_TYPE_AES_GCM_256,
             iv: encodeBase64(generateIv())
         })
         const password = "123456"
-        const cipher = encryptBlockAddress(blockAddress1, algorithm, password)
-        const blockAddress2 = decryptBlockAddress(cipher, algorithm, password)
+        const cipher = await encryptBlockAddress(blockAddress1, algorithm, password)
+        const blockAddress2 = await decryptBlockAddress(cipher, algorithm, password)
         expect(blockAddress2).toEqual(blockAddress1)
     })
 
@@ -59,7 +59,7 @@ describe('BlockAddress', () => {
 })
 
 describe("Identity", () => {
-    it('sign and verify', () => {
+    it('sign and verify', async () => {
         const password = "123456"
         const template: IdentityTemplate = {
             parent: "",
@@ -80,7 +80,7 @@ describe("Identity", () => {
                 }
             })
         }
-        const identity = createIdentity(password, template)
+        const identity = await createIdentity(password, template)
         expect(verifyIdentity(identity)).toBeTruthy()
     })
 

@@ -7,22 +7,7 @@ import {
 } from "../yeying/api/common/message";
 import {ApplicationCodeEnum, IdentityCodeEnum, NetworkTypeEnum} from "../yeying/api/common/code";
 import {toBeHex} from "ethers";
-import crypto from "crypto";
 
-export function getCurrentUtcString() {
-    const now = new Date();
-    return now.toISOString();
-}
-
-
-
-export function encodeBase64(bytes: ArrayBufferLike) {
-    return Buffer.from(bytes).toString("base64")
-}
-
-export function decodeBase64(str: string) {
-    return Buffer.from(str, "base64")
-}
 
 export interface Identity {
     metadata: IdentityMetadata

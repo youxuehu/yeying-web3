@@ -1,16 +1,48 @@
 import elliptic from "elliptic"
 import BN from "bn.js"
-import crypto, {CipherGCMTypes} from "crypto";
 import {CipherTypeEnum} from "../yeying/api/common/code";
 
-export function generateIv(len = 12) {
-    return crypto.getRandomValues(new Uint8Array(12))
+function isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof window.crypto !== 'undefined';
 }
 
-export function computeHash(content: Uint8Array | string) {
-    const hash = crypto.createHash("sha256")
-    hash.update(content)
-    return hash.digest()
+// 检测环境是否为Node.js
+function isNode(): boolean {
+    return typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+}
+
+export function encodeBase64(bytes: ArrayBufferLike) {
+    return Buffer.from(bytes).toString("base64")
+}
+
+export function decodeBase64(str: string) {
+    return Buffer.from(str, "base64")
+}
+
+export function generateIv(len = 12) {
+    let subtleCrypto;
+    if (isBrowser()) {
+        subtleCrypto = window.crypto;
+    } else if (isNode()) {
+        subtleCrypto = require('crypto');
+    } else {
+        throw new Error('Unsupported environment');
+    }
+    return subtleCrypto.getRandomValues(new Uint8Array(len))
+}
+
+export async function computeHash(content: Uint8Array | string) {
+    let subtleCrypto;
+    if (isBrowser()) {
+        subtleCrypto = window.crypto.subtle;
+    } else if (isNode()) {
+        const crypto = require('crypto');
+        subtleCrypto = crypto.subtle;
+    } else {
+        throw new Error('Unsupported environment');
+    }
+
+    return await subtleCrypto.digest('SHA-256', content)
 }
 
 export function fromDidToPublicKey(did: string) {
@@ -22,9 +54,6 @@ export function fromDidToPublicKey(did: string) {
     return trimLeft(publicKey, "0x")
 }
 
-export function encodeBase64(bytes: ArrayBufferLike) {
-    return Buffer.from(bytes).toString("base64")
-}
 
 export function trimLeft(str: string, trim: string) {
     if (str === undefined || str === null) {
@@ -34,31 +63,61 @@ export function trimLeft(str: string, trim: string) {
     return str.startsWith(trim) ? str.substring(trim.length) : str
 }
 
-export function convertCipherTypeTo(type: CipherTypeEnum): CipherGCMTypes {
+export function convertCipherTypeTo(type: CipherTypeEnum): string {
     switch (type) {
         case CipherTypeEnum.CIPHER_TYPE_AES_GCM_256:
-            return "aes-256-gcm"
+            return 'AES-GCM'
         default:
-            return "aes-256-gcm"
+            return 'AES-GCM'
     }
 }
 
-export function encrypt(type: CipherTypeEnum, key: Uint8Array, iv: Uint8Array, content: Uint8Array) {
-    const cipher = crypto.createCipheriv(convertCipherTypeTo(type), key, iv);
-    return Buffer.concat([cipher.update(content), cipher.final(), cipher.getAuthTag()]).toString('base64')
+export async function deriveRawKeyFromPassword(algorithmName: string, password: string) {
+    let subtleCrypto;
+    if (isBrowser()) {
+        subtleCrypto = window.crypto.subtle;
+    } else if (isNode()) {
+        const crypto = require('crypto');
+        subtleCrypto = crypto.subtle;
+    } else {
+        throw new Error('Unsupported environment');
+    }
+
+    const passwordHash = await computeHash(new TextEncoder().encode(password))
+    return subtleCrypto.importKey('raw', passwordHash, algorithmName, false, ['encrypt', 'decrypt',])
 }
 
-export function decrypt(type: CipherTypeEnum, key: Uint8Array, iv: Uint8Array, content: string) {
-    const data = Buffer.from(content, "base64")
-    const decipher = crypto.createDecipheriv(convertCipherTypeTo(type), key, iv);
-    decipher.setAuthTag(data.subarray(data.length - 16))
-    return Buffer.concat([decipher.update(data.subarray(0, data.length - 16)), decipher.final()])
+export async function encrypt(name: string, key: any, iv: Uint8Array, content: Uint8Array) {
+    let subtleCrypto;
+    if (isBrowser()) {
+        subtleCrypto = window.crypto.subtle;
+    } else if (isNode()) {
+        const crypto = require('crypto');
+        subtleCrypto = crypto.subtle;
+    } else {
+        throw new Error('Unsupported environment');
+    }
+    return await subtleCrypto.encrypt({name: name, iv: iv}, key, content)
 }
 
-export function verify(publicKey: string, data: Uint8Array, signature: string) {
+export async function decrypt(name: string, key: any, iv: Uint8Array, content: Uint8Array) {
+    let subtleCrypto;
+    if (isBrowser()) {
+        subtleCrypto = window.crypto.subtle;
+    } else if (isNode()) {
+        const crypto = require('crypto');
+        subtleCrypto = crypto.subtle;
+    } else {
+        throw new Error('Unsupported environment');
+    }
+
+    return await subtleCrypto.decrypt({name: name, iv: iv}, key, content)
+}
+
+export async function verify(publicKey: string, data: Uint8Array, signature: string) {
     const ec = new elliptic.ec("secp256k1")
     const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
-    const hashBytes = computeHash(data)
+    const hashBytes = await computeHash(data)
     const buffer = Buffer.from(signature, "hex")
     return pubKeyEc.verify(hashBytes, {
         r: new BN(buffer.subarray(0, 32), "be"),
@@ -67,11 +126,11 @@ export function verify(publicKey: string, data: Uint8Array, signature: string) {
     })
 }
 
-export function sign(privateKey: string, data: Uint8Array) {
+export async function sign(privateKey: string, data: Uint8Array) {
     const ec = new elliptic.ec("secp256k1")
     const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
-    const hashBytes = computeHash(data)
-    const signature = keyPair.sign(hashBytes, {canonical: true})
+    const hashBytes = await computeHash(data)
+    const signature = keyPair.sign(new Uint8Array(hashBytes), {canonical: true})
     const r = signature.r.toArrayLike(Buffer, "be", 32)
     const s = signature.s.toArrayLike(Buffer, "be", 32)
     // @ts-ignore

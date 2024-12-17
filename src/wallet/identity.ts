@@ -5,12 +5,23 @@ import {
     IdentityMetadata,
     IdentityOrganizationExtend,
     IdentityPersonalExtend,
-    IdentityServiceExtend, Mnemonic,
+    IdentityServiceExtend,
+    Mnemonic,
     SecurityAlgorithm
 } from "../yeying/api/common/message";
-import {constructIdentifier, decodeBase64, getCurrentUtcString, Identity, IdentityTemplate} from "./model";
-import {computeHash, decrypt, encrypt, fromDidToPublicKey, sign, verify} from "../common/cipher";
+import {constructIdentifier, Identity, IdentityTemplate} from "./model";
+import {
+    convertCipherTypeTo,
+    decodeBase64,
+    decrypt,
+    deriveRawKeyFromPassword, encodeBase64,
+    encrypt,
+    fromDidToPublicKey,
+    sign,
+    verify
+} from "../common/cipher";
 import {computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists} from "ethers";
+import {getCurrentUtcString} from "../common/date";
 
 export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING) {
     const wallet = HDNodeWallet.fromPhrase(mnemonic.phrase, mnemonic.password, mnemonic.path, wordlists[mnemonic.locale])
@@ -32,7 +43,7 @@ export function createBlockAddress(networkType = NetworkTypeEnum.NETWORK_TYPE_YE
     return buildBlockAddress(networkType, wallet, path)
 }
 
-export function updateIdentity(password: string, template: IdentityTemplate, identity: Identity) {
+export async function updateIdentity(password: string, template: IdentityTemplate, identity: Identity) {
     const newIdentity = structuredClone(identity)
     newIdentity.metadata.name = template.name
     newIdentity.metadata.description = template.description
@@ -48,12 +59,26 @@ export function updateIdentity(password: string, template: IdentityTemplate, ide
         throw new Error("Unknown algorithm")
     }
 
-    const blockAddress = decryptBlockAddress(identity.blockAddress, algorithm, password)
-    newIdentity.signature = signIdentity(blockAddress.privateKey, newIdentity)
+    const blockAddress = await decryptBlockAddress(identity.blockAddress, algorithm, password)
+    newIdentity.signature = await signIdentity(blockAddress.privateKey, newIdentity)
     return newIdentity
 }
 
-export function createIdentity(password: string, template: IdentityTemplate) {
+export async function encryptBlockAddress(blockAddress: BlockAddress, algorithm: SecurityAlgorithm, password: string) {
+    const algorithmName = convertCipherTypeTo(algorithm.type)
+    const key = await deriveRawKeyFromPassword(algorithmName, password)
+    const cipher = await encrypt(algorithmName, key, decodeBase64(algorithm.iv), BlockAddress.encode(blockAddress).finish())
+    return encodeBase64(cipher)
+}
+
+export async function decryptBlockAddress(blockAddress: string, algorithm: SecurityAlgorithm, password: string) {
+    const algorithmName = convertCipherTypeTo(algorithm.type)
+    const key = await deriveRawKeyFromPassword(algorithmName, password)
+    const plain = await decrypt(algorithmName, key, decodeBase64(algorithm.iv), decodeBase64(blockAddress))
+    return BlockAddress.decode(new Uint8Array(plain))
+}
+
+export async function createIdentity(password: string, template: IdentityTemplate) {
     const blockAddress = createBlockAddress()
     const metadata = IdentityMetadata.create({
         network: NetworkTypeEnum.NETWORK_TYPE_UNKNOWN,
@@ -73,32 +98,24 @@ export function createIdentity(password: string, template: IdentityTemplate) {
     if (algorithm === undefined) {
         throw new Error("Unknown algorithm")
     }
-
+    const cipher = await encryptBlockAddress(blockAddress, algorithm, password)
     const identity: Identity = {
         metadata: metadata,
-        blockAddress: encryptBlockAddress(blockAddress, algorithm, password),
+        blockAddress: cipher,
         extend: template.extend,
         signature: "",
     }
 
-    identity.signature = signIdentity(blockAddress.privateKey, identity)
+    identity.signature = await signIdentity(blockAddress.privateKey, identity)
     return identity
 }
 
-export function encryptBlockAddress(blockAddress: BlockAddress, algorithm: SecurityAlgorithm, password: string): string {
-    return encrypt(algorithm.type, computeHash(password), decodeBase64(algorithm.iv), BlockAddress.encode(blockAddress).finish())
+export async function verifyIdentity(identity: Identity) {
+    return await verify(fromDidToPublicKey(identity.metadata.did), serializeIdentity(identity), identity.signature)
 }
 
-export function decryptBlockAddress(blockAddress: string, algorithm: SecurityAlgorithm, password: string): BlockAddress {
-    return BlockAddress.decode(decrypt(algorithm.type, computeHash(password), decodeBase64(algorithm.iv), blockAddress))
-}
-
-export function verifyIdentity(identity: Identity): boolean {
-    return verify(fromDidToPublicKey(identity.metadata.did), serializeIdentity(identity), identity.signature)
-}
-
-export function signIdentity(privateKey: string, identity: Identity): string {
-    return sign(privateKey, serializeIdentity(identity))
+export async function signIdentity(privateKey: string, identity: Identity) {
+    return await sign(privateKey, serializeIdentity(identity))
 }
 
 function serializeIdentity(identity: Identity): Uint8Array {
