@@ -11,17 +11,18 @@ import {
 } from "../yeying/api/common/message";
 import {constructIdentifier, Identity, IdentityTemplate} from "./model";
 import {
+    computeHash,
     convertCipherTypeTo,
     decodeBase64,
     decrypt,
     deriveRawKeyFromPassword, encodeBase64,
     encrypt,
     fromDidToPublicKey,
-    sign,
-    verify
+    trimLeft,
 } from "../common/cipher";
 import {computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists} from "ethers";
 import {getCurrentUtcString} from "../common/date";
+import elliptic from "elliptic";
 
 export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING) {
     const wallet = HDNodeWallet.fromPhrase(mnemonic.phrase, mnemonic.password, mnemonic.path, wordlists[mnemonic.locale])
@@ -112,14 +113,29 @@ export async function createIdentity(password: string, template: IdentityTemplat
 }
 
 export async function verifyIdentity(identity: Identity) {
-    const publicKey = fromDidToPublicKey(identity.metadata.did)
     const bytes = serializeIdentity(identity)
-    return await verify(publicKey, bytes, identity.signature)
+    return await verifyData(identity.metadata.did, bytes, identity.signature)
+}
+
+export async function verifyData(did: string, data: Uint8Array, signature: string) {
+    const publicKey = fromDidToPublicKey(did)
+    const ec = new elliptic.ec("secp256k1")
+    const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
+    const hashBytes = await computeHash(data)
+    return pubKeyEc.verify(new Uint8Array(hashBytes), signature)
+}
+
+export async function signData(privateKey: string, data: Uint8Array) {
+    const ec = new elliptic.ec("secp256k1")
+    const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
+    const hashBytes = await computeHash(data)
+    const signature = keyPair.sign(new Uint8Array(hashBytes), {canonical: true})
+    return signature.toDER('hex')
 }
 
 export async function signIdentity(privateKey: string, identity: Identity) {
     const bytes = serializeIdentity(identity)
-    return await sign(privateKey, bytes)
+    return await signData(privateKey, bytes)
 }
 
 function serializeIdentity(identity: Identity): Uint8Array {
