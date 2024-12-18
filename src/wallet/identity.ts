@@ -82,7 +82,7 @@ export async function decryptBlockAddress(blockAddress: string, algorithm: Secur
 export async function createIdentity(password: string, template: IdentityTemplate) {
     const blockAddress = createBlockAddress()
     const metadata = IdentityMetadata.create({
-        network: NetworkTypeEnum.NETWORK_TYPE_UNKNOWN,
+        network: template.network,
         version: 0,
         did: blockAddress.identifier,
         address: blockAddress.address,
@@ -108,7 +108,6 @@ export async function createIdentity(password: string, template: IdentityTemplat
     }
 
     identity.signature = await signIdentity(blockAddress.privateKey, identity)
-    console.log(identity.signature)
     return identity
 }
 

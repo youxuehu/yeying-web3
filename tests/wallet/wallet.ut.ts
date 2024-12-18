@@ -12,7 +12,13 @@ import {
     Mnemonic,
     SecurityAlgorithm
 } from "../../src/yeying/api/common/message";
-import {ApplicationCodeEnum, CipherTypeEnum, IdentityCodeEnum, ServiceCodeEnum} from "../../src/yeying/api/common/code";
+import {
+    ApplicationCodeEnum,
+    CipherTypeEnum,
+    IdentityCodeEnum,
+    NetworkTypeEnum,
+    ServiceCodeEnum
+} from "../../src/yeying/api/common/code";
 import {IdentityTemplate} from "../../src/wallet/model";
 import {encodeBase64, generateIv} from "../../src/common/cipher";
 
@@ -63,6 +69,7 @@ describe("Identity", () => {
         const password = "123456"
         const template: IdentityTemplate = {
             parent: "",
+            network: NetworkTypeEnum.NETWORK_TYPE_YEYING,
             code: IdentityCodeEnum.IDENTITY_CODE_APPLICATION,
             name: "name1",
             description: "description1",

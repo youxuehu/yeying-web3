@@ -17,6 +17,7 @@ export interface Identity {
 }
 
 export interface IdentityTemplate {
+    network: NetworkTypeEnum
     parent: string
     code: IdentityCodeEnum
     name: string
