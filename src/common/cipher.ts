@@ -1,4 +1,3 @@
-import elliptic from "elliptic"
 import {CipherTypeEnum} from "../yeying/api/common/code";
 
 function isBrowser(): boolean {
@@ -111,19 +110,4 @@ export async function decrypt(name: string, key: any, iv: Uint8Array, content: U
     }
 
     return await subtleCrypto.decrypt({name: name, iv: iv}, key, content)
-}
-
-export async function verify(publicKey: string, data: Uint8Array, signature: string) {
-    const ec = new elliptic.ec("secp256k1")
-    const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
-    const hashBytes = await computeHash(data)
-    return pubKeyEc.verify(new Uint8Array(hashBytes), signature)
-}
-
-export async function sign(privateKey: string, data: Uint8Array) {
-    const ec = new elliptic.ec("secp256k1")
-    const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
-    const hashBytes = await computeHash(data)
-    const signature = keyPair.sign(new Uint8Array(hashBytes), {canonical: true})
-    return signature.toDER('hex')
 }
