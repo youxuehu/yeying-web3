@@ -2,8 +2,8 @@ import {
     createBlockAddress,
     createIdentity,
     decryptBlockAddress, encryptBlockAddress,
-    recoveryFromMnemonic, signIdentity,
-    updateIdentity, verifyIdentity
+    recoveryFromMnemonic, signData, signIdentity,
+    updateIdentity, verifyData, verifyIdentity
 } from "./wallet/identity";
 
 export {Identity, IdentityTemplate} from "./wallet/model";
@@ -15,6 +15,8 @@ export const Wallet = {
     updateIdentity,
     signIdentity,
     verifyIdentity,
+    signData,
+    verifyData,
     decryptBlockAddress,
     encryptBlockAddress,
 }
