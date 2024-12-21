@@ -1,4 +1,4 @@
-import {IdentityCodeEnum, LanguageCodeEnum, NetworkTypeEnum} from "../yeying/api/common/code";
+import {CipherTypeEnum, IdentityCodeEnum, LanguageCodeEnum, NetworkTypeEnum} from "../yeying/api/common/code";
 import {
     BlockAddress,
     IdentityApplicationExtend,
@@ -15,9 +15,11 @@ import {
     convertCipherTypeTo,
     decodeBase64,
     decrypt,
-    deriveRawKeyFromPassword, encodeBase64,
+    deriveRawKeyFromPassword,
+    encodeBase64,
     encrypt,
     fromDidToPublicKey,
+    generateIv,
     trimLeft,
 } from "../common/cipher";
 import {computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists} from "ethers";
@@ -95,10 +97,20 @@ export async function createIdentity(password: string, template: IdentityTemplat
         checkpoint: getCurrentUtcString()
     })
 
-    const algorithm = template.extend.securityConfig?.algorithm
+    if (template.extend.securityConfig === undefined) {
+        template.extend.securityConfig = {
+            algorithm: {
+                type: CipherTypeEnum.CIPHER_TYPE_AES_GCM_256,
+                iv: generateIv(12)
+            }
+        }
+    }
+
+    const algorithm = template.extend.securityConfig.algorithm
     if (algorithm === undefined) {
         throw new Error("Unknown algorithm")
     }
+
     const cipher = await encryptBlockAddress(blockAddress, algorithm, password)
     const identity: Identity = {
         metadata: metadata,
