@@ -4,15 +4,18 @@ import {
     IdentityOrganizationExtend,
     IdentityPersonalExtend,
     IdentityServiceExtend
-} from "../yeying/api/common/message";
-import {IdentityCodeEnum, NetworkTypeEnum} from "../yeying/api/common/code";
-import {toBeHex} from "ethers";
-
+} from "../yeying/api/common/message"
+import { IdentityCodeEnum, NetworkTypeEnum } from "../yeying/api/common/code"
+import { toBeHex } from "ethers"
 
 export interface Identity {
     metadata: IdentityMetadata
     blockAddress: string
-    extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend,
+    extend:
+        | IdentityServiceExtend
+        | IdentityOrganizationExtend
+        | IdentityPersonalExtend
+        | IdentityApplicationExtend
     signature: string
 }
 
@@ -23,9 +26,16 @@ export interface IdentityTemplate {
     name: string
     description: string
     avatar: string
-    extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
+    extend:
+        | IdentityServiceExtend
+        | IdentityOrganizationExtend
+        | IdentityPersonalExtend
+        | IdentityApplicationExtend
 }
 
-export function constructIdentifier(network: NetworkTypeEnum, publicKey: string): string {
-    return `did:ethr:${toBeHex(network)}:${publicKey}`;
+export function constructIdentifier(
+    network: NetworkTypeEnum,
+    publicKey: string
+): string {
+    return `did:ethr:${toBeHex(network)}:${publicKey}`
 }

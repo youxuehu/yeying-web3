@@ -269,7 +269,7 @@ export function languageCodeEnumToJSON(object: LanguageCodeEnum): string {
   }
 }
 
-/** 针对服务做一些原子的、标准化的工作，方便第三方接入区块链网络，也方便服务使用者集成使用 */
+/** API编码，针对服务做一些原子的、标准化的工作，方便第三方接入区块链网络，也方便服务使用者集成使用 */
 export enum ApiCodeEnum {
   /** API_CODE_UNKNOWN - 未知编码，是一种占位符 */
   API_CODE_UNKNOWN = 0,
@@ -368,7 +368,7 @@ export function apiCodeEnumToJSON(object: ApiCodeEnum): string {
   }
 }
 
-/** 服务定义会不断的演化 */
+/** 服务编码 */
 export enum ServiceCodeEnum {
   /** SERVICE_CODE_UNKNOWN - 未知编码，是一种占位符 */
   SERVICE_CODE_UNKNOWN = 0,
@@ -418,6 +418,7 @@ export function serviceCodeEnumToJSON(object: ServiceCodeEnum): string {
   }
 }
 
+/** 身份编码 */
 export enum IdentityCodeEnum {
   /** IDENTITY_CODE_UNKNOWN - 未知编码，是一种占位符 */
   IDENTITY_CODE_UNKNOWN = 0,
@@ -764,6 +765,7 @@ export function participantTypeEnumToJSON(object: ParticipantTypeEnum): string {
   }
 }
 
+/** 应用状态 */
 export enum ApplicationStatusEnum {
   /** APPLICATION_STATUS_UNKNOWN - 未知编码，是一种占位符 */
   APPLICATION_STATUS_UNKNOWN = 0,
@@ -813,6 +815,7 @@ export function applicationStatusEnumToJSON(object: ApplicationStatusEnum): stri
   }
 }
 
+/** 应用编码 */
 export enum ApplicationCodeEnum {
   /** APPLICATION_CODE_UNKNOWN - 未知编码，是一种占位符 */
   APPLICATION_CODE_UNKNOWN = 0,
@@ -890,6 +893,7 @@ export function applicationCodeEnumToJSON(object: ApplicationCodeEnum): string {
   }
 }
 
+/** 密码学类型 */
 export enum CipherTypeEnum {
   /** CIPHER_TYPE_UNKNOWN - 未知编码，是一种占位符 */
   CIPHER_TYPE_UNKNOWN = 0,
@@ -925,6 +929,7 @@ export function cipherTypeEnumToJSON(object: CipherTypeEnum): string {
   }
 }
 
+/** 鉴权类型 */
 export enum AuthenticateTypeEnum {
   /** AUTHENTICATE_TYPE_UNKNOWN - 未知编码，是一种占位符 */
   AUTHENTICATE_TYPE_UNKNOWN = 0,
@@ -967,6 +972,7 @@ export function authenticateTypeEnumToJSON(object: AuthenticateTypeEnum): string
   }
 }
 
+/** 流数据类型 */
 export enum StreamDataTagEnum {
   /** STREAM_DATA_TAG_HEAD - 描述数据 */
   STREAM_DATA_TAG_HEAD = 0,
@@ -1009,6 +1015,7 @@ export function streamDataTagEnumToJSON(object: StreamDataTagEnum): string {
   }
 }
 
+/** 区块链网络类型 */
 export enum NetworkTypeEnum {
   /** NETWORK_TYPE_UNKNOWN - 未知编码，是一种占位符 */
   NETWORK_TYPE_UNKNOWN = 0,

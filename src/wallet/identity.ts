@@ -1,4 +1,9 @@
-import {CipherTypeEnum, IdentityCodeEnum, LanguageCodeEnum, NetworkTypeEnum} from "../yeying/api/common/code";
+import {
+    CipherTypeEnum,
+    IdentityCodeEnum,
+    LanguageCodeEnum,
+    NetworkTypeEnum
+} from "../yeying/api/common/code"
 import {
     BlockAddress,
     IdentityApplicationExtend,
@@ -8,8 +13,8 @@ import {
     IdentityServiceExtend,
     Mnemonic,
     SecurityAlgorithm
-} from "../yeying/api/common/message";
-import {constructIdentifier, Identity, IdentityTemplate} from "./model";
+} from "../yeying/api/common/message"
+import { constructIdentifier, Identity, IdentityTemplate } from "./model"
 import {
     computeHash,
     convertCipherTypeTo,
@@ -20,33 +25,56 @@ import {
     encrypt,
     fromDidToPublicKey,
     generateIv,
-    trimLeft,
-} from "../common/cipher";
-import {computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists} from "ethers";
-import {getCurrentUtcString} from "../common/date";
-import elliptic from "elliptic";
+    trimLeft
+} from "../common/crypto"
+import {
+    computeAddress,
+    defaultPath,
+    HDNodeWallet,
+    Wordlist,
+    wordlists
+} from "ethers"
+import { getCurrentUtcString } from "../common/date"
+import elliptic from "elliptic"
 
-export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING) {
-    const wallet = HDNodeWallet.fromPhrase(mnemonic.phrase, mnemonic.password, mnemonic.path, wordlists[mnemonic.locale])
+export function recoveryFromMnemonic(
+    mnemonic: Mnemonic,
+    networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING
+) {
+    const wallet = HDNodeWallet.fromPhrase(
+        mnemonic.phrase,
+        mnemonic.password,
+        mnemonic.path,
+        wordlists[mnemonic.locale]
+    )
     return buildBlockAddress(networkType, wallet, mnemonic.path)
 }
 
-export function createBlockAddress(networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING, language: LanguageCodeEnum = LanguageCodeEnum.LANGUAGE_CODE_ZH_CH, password: string = "", path: string = defaultPath): BlockAddress {
+export function createBlockAddress(
+    networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING,
+    language: LanguageCodeEnum = LanguageCodeEnum.LANGUAGE_CODE_ZH_CH,
+    password: string = "",
+    path: string = defaultPath
+): BlockAddress {
     let wordlist: Wordlist
     switch (language) {
         case LanguageCodeEnum.LANGUAGE_CODE_ZH_CH:
-            wordlist = wordlists['zh_cn']
+            wordlist = wordlists["zh_cn"]
         case LanguageCodeEnum.LANGUAGE_CODE_EN_US:
-            wordlist = wordlists['en']
+            wordlist = wordlists["en"]
         default:
-            wordlist = wordlists['zh_cn']
+            wordlist = wordlists["zh_cn"]
     }
 
     const wallet = HDNodeWallet.createRandom(password, path, wordlist)
     return buildBlockAddress(networkType, wallet, path)
 }
 
-export async function updateIdentity(password: string, template: IdentityTemplate, identity: Identity) {
+export async function updateIdentity(
+    password: string,
+    template: IdentityTemplate,
+    identity: Identity
+) {
     const newIdentity = structuredClone(identity)
     newIdentity.metadata.name = template.name
     newIdentity.metadata.description = template.description
@@ -62,26 +90,54 @@ export async function updateIdentity(password: string, template: IdentityTemplat
         throw new Error("Unknown algorithm")
     }
 
-    const blockAddress = await decryptBlockAddress(identity.blockAddress, algorithm, password)
-    newIdentity.signature = await signIdentity(blockAddress.privateKey, newIdentity)
+    const blockAddress = await decryptBlockAddress(
+        identity.blockAddress,
+        algorithm,
+        password
+    )
+    newIdentity.signature = await signIdentity(
+        blockAddress.privateKey,
+        newIdentity
+    )
     return newIdentity
 }
 
-export async function encryptBlockAddress(blockAddress: BlockAddress, algorithm: SecurityAlgorithm, password: string) {
+export async function encryptBlockAddress(
+    blockAddress: BlockAddress,
+    algorithm: SecurityAlgorithm,
+    password: string
+) {
     const algorithmName = convertCipherTypeTo(algorithm.type)
     const key = await deriveRawKeyFromPassword(algorithmName, password)
-    const cipher = await encrypt(algorithmName, key, decodeBase64(algorithm.iv), BlockAddress.encode(blockAddress).finish())
+    const cipher = await encrypt(
+        algorithmName,
+        key,
+        decodeBase64(algorithm.iv),
+        BlockAddress.encode(blockAddress).finish()
+    )
     return encodeBase64(cipher)
 }
 
-export async function decryptBlockAddress(blockAddress: string, algorithm: SecurityAlgorithm, password: string) {
+export async function decryptBlockAddress(
+    blockAddress: string,
+    algorithm: SecurityAlgorithm,
+    password: string
+) {
     const algorithmName = convertCipherTypeTo(algorithm.type)
     const key = await deriveRawKeyFromPassword(algorithmName, password)
-    const plain = await decrypt(algorithmName, key, decodeBase64(algorithm.iv), decodeBase64(blockAddress))
+    const plain = await decrypt(
+        algorithmName,
+        key,
+        decodeBase64(algorithm.iv),
+        decodeBase64(blockAddress)
+    )
     return BlockAddress.decode(new Uint8Array(plain))
 }
 
-export async function createIdentity(password: string, template: IdentityTemplate) {
+export async function createIdentity(
+    password: string,
+    template: IdentityTemplate
+) {
     const blockAddress = createBlockAddress()
     const metadata = IdentityMetadata.create({
         network: template.network,
@@ -101,7 +157,7 @@ export async function createIdentity(password: string, template: IdentityTemplat
         template.extend.securityConfig = {
             algorithm: {
                 type: CipherTypeEnum.CIPHER_TYPE_AES_GCM_256,
-                iv: generateIv(12)
+                iv: encodeBase64(generateIv(12))
             }
         }
     }
@@ -116,7 +172,7 @@ export async function createIdentity(password: string, template: IdentityTemplat
         metadata: metadata,
         blockAddress: cipher,
         extend: template.extend,
-        signature: "",
+        signature: ""
     }
 
     identity.signature = await signIdentity(blockAddress.privateKey, identity)
@@ -128,20 +184,24 @@ export async function verifyIdentity(identity: Identity) {
     return await verifyData(identity.metadata.did, bytes, identity.signature)
 }
 
-export async function verifyData(did: string, data: Uint8Array, signature: string) {
+export async function verifyData(
+    did: string,
+    data: Uint8Array,
+    signature: string
+) {
     const publicKey = fromDidToPublicKey(did)
     const ec = new elliptic.ec("secp256k1")
     const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
     const hashBytes = await computeHash(data)
-    return pubKeyEc.verify(new Uint8Array(hashBytes), signature)
+    return pubKeyEc.verify(hashBytes, signature)
 }
 
 export async function signData(privateKey: string, data: Uint8Array) {
     const ec = new elliptic.ec("secp256k1")
     const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
     const hashBytes = await computeHash(data)
-    const signature = keyPair.sign(new Uint8Array(hashBytes), {canonical: true})
-    return signature.toDER('hex')
+    const signature = keyPair.sign(hashBytes, { canonical: true })
+    return signature.toDER("hex")
 }
 
 export async function signIdentity(privateKey: string, identity: Identity) {
@@ -150,28 +210,46 @@ export async function signIdentity(privateKey: string, identity: Identity) {
 }
 
 function serializeIdentity(identity: Identity): Uint8Array {
-    const binaryWriter = IdentityMetadata.encode(identity.metadata);
+    const binaryWriter = IdentityMetadata.encode(identity.metadata)
     binaryWriter.string(identity.blockAddress)
     switch (identity.metadata.code) {
         case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
-            IdentityServiceExtend.encode(<IdentityServiceExtend>identity.extend, binaryWriter)
+            IdentityServiceExtend.encode(
+                <IdentityServiceExtend>identity.extend,
+                binaryWriter
+            )
             break
         case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
-            IdentityApplicationExtend.encode(<IdentityApplicationExtend>identity.extend, binaryWriter)
+            IdentityApplicationExtend.encode(
+                <IdentityApplicationExtend>identity.extend,
+                binaryWriter
+            )
             break
         case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
-            IdentityPersonalExtend.encode(<IdentityPersonalExtend>identity.extend, binaryWriter)
+            IdentityPersonalExtend.encode(
+                <IdentityPersonalExtend>identity.extend,
+                binaryWriter
+            )
             break
         case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
-            IdentityOrganizationExtend.encode(<IdentityOrganizationExtend>identity.extend, binaryWriter)
+            IdentityOrganizationExtend.encode(
+                <IdentityOrganizationExtend>identity.extend,
+                binaryWriter
+            )
             break
         default:
-            throw new Error(`Not supported identity code=${identity.metadata.code}`)
+            throw new Error(
+                `Not supported identity code=${identity.metadata.code}`
+            )
     }
     return binaryWriter.finish()
 }
 
-function buildBlockAddress(networkType: NetworkTypeEnum, wallet: HDNodeWallet, path: string): BlockAddress {
+function buildBlockAddress(
+    networkType: NetworkTypeEnum,
+    wallet: HDNodeWallet,
+    path: string
+): BlockAddress {
     const blockAddress = BlockAddress.create({
         privateKey: wallet.privateKey,
         address: computeAddress(wallet.privateKey),
@@ -187,11 +265,9 @@ function buildBlockAddress(networkType: NetworkTypeEnum, wallet: HDNodeWallet, p
                 phrase: mnemonic.phrase,
                 locale: mnemonic.wordlist.locale,
                 path: path,
-                password: mnemonic.password,
+                password: mnemonic.password
             }
         }
     }
     return blockAddress
 }
-
-

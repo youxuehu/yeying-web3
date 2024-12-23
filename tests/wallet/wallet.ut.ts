@@ -20,7 +20,7 @@ import {
     ServiceCodeEnum
 } from "../../src/yeying/api/common/code";
 import {IdentityTemplate} from "../../src/wallet/model";
-import {encodeBase64, generateIv} from "../../src/common/cipher";
+import {encodeBase64, generateIv} from "../../src/common/crypto";
 
 
 describe('BlockAddress', () => {

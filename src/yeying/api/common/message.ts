@@ -49,20 +49,18 @@ export interface ResponseStatus {
 }
 
 export interface ResponsePage {
-  /** 总记录数 */
-  totalCount: number;
-  /** 总页数 */
-  pageCount: number;
-  /** 当前页数 */
-  currentPage: number;
-  /** 每页记录数 */
+  /** 总的记录数 */
+  total: number;
+  /** 页面索引，从1开始 */
+  page: number;
+  /** 页面大小 */
   pageSize: number;
 }
 
 export interface RequestPage {
-  /** 请求第几页，从1开始 */
-  pageIndex: number;
-  /** 每页记录数 */
+  /** 页面索引，从1开始 */
+  page: number;
+  /** 页面大小 */
   pageSize: number;
 }
 
@@ -360,19 +358,16 @@ export const ResponseStatus: MessageFns<ResponseStatus> = {
 };
 
 function createBaseResponsePage(): ResponsePage {
-  return { totalCount: 0, pageCount: 0, currentPage: 0, pageSize: 0 };
+  return { total: 0, page: 0, pageSize: 0 };
 }
 
 export const ResponsePage: MessageFns<ResponsePage> = {
   encode(message: ResponsePage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.totalCount !== 0) {
-      writer.uint32(8).int32(message.totalCount);
+    if (message.total !== 0) {
+      writer.uint32(8).uint32(message.total);
     }
-    if (message.pageCount !== 0) {
-      writer.uint32(16).int32(message.pageCount);
-    }
-    if (message.currentPage !== 0) {
-      writer.uint32(24).uint32(message.currentPage);
+    if (message.page !== 0) {
+      writer.uint32(24).uint32(message.page);
     }
     if (message.pageSize !== 0) {
       writer.uint32(32).uint32(message.pageSize);
@@ -392,15 +387,7 @@ export const ResponsePage: MessageFns<ResponsePage> = {
             break;
           }
 
-          message.totalCount = reader.int32();
-          continue;
-        }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.pageCount = reader.int32();
+          message.total = reader.uint32();
           continue;
         }
         case 3: {
@@ -408,7 +395,7 @@ export const ResponsePage: MessageFns<ResponsePage> = {
             break;
           }
 
-          message.currentPage = reader.uint32();
+          message.page = reader.uint32();
           continue;
         }
         case 4: {
@@ -430,23 +417,19 @@ export const ResponsePage: MessageFns<ResponsePage> = {
 
   fromJSON(object: any): ResponsePage {
     return {
-      totalCount: isSet(object.totalCount) ? globalThis.Number(object.totalCount) : 0,
-      pageCount: isSet(object.pageCount) ? globalThis.Number(object.pageCount) : 0,
-      currentPage: isSet(object.currentPage) ? globalThis.Number(object.currentPage) : 0,
+      total: isSet(object.total) ? globalThis.Number(object.total) : 0,
+      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
       pageSize: isSet(object.pageSize) ? globalThis.Number(object.pageSize) : 0,
     };
   },
 
   toJSON(message: ResponsePage): unknown {
     const obj: any = {};
-    if (message.totalCount !== 0) {
-      obj.totalCount = Math.round(message.totalCount);
+    if (message.total !== 0) {
+      obj.total = Math.round(message.total);
     }
-    if (message.pageCount !== 0) {
-      obj.pageCount = Math.round(message.pageCount);
-    }
-    if (message.currentPage !== 0) {
-      obj.currentPage = Math.round(message.currentPage);
+    if (message.page !== 0) {
+      obj.page = Math.round(message.page);
     }
     if (message.pageSize !== 0) {
       obj.pageSize = Math.round(message.pageSize);
@@ -459,22 +442,21 @@ export const ResponsePage: MessageFns<ResponsePage> = {
   },
   fromPartial<I extends Exact<DeepPartial<ResponsePage>, I>>(object: I): ResponsePage {
     const message = createBaseResponsePage();
-    message.totalCount = object.totalCount ?? 0;
-    message.pageCount = object.pageCount ?? 0;
-    message.currentPage = object.currentPage ?? 0;
+    message.total = object.total ?? 0;
+    message.page = object.page ?? 0;
     message.pageSize = object.pageSize ?? 0;
     return message;
   },
 };
 
 function createBaseRequestPage(): RequestPage {
-  return { pageIndex: 0, pageSize: 0 };
+  return { page: 0, pageSize: 0 };
 }
 
 export const RequestPage: MessageFns<RequestPage> = {
   encode(message: RequestPage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.pageIndex !== 0) {
-      writer.uint32(8).uint32(message.pageIndex);
+    if (message.page !== 0) {
+      writer.uint32(8).uint32(message.page);
     }
     if (message.pageSize !== 0) {
       writer.uint32(16).uint32(message.pageSize);
@@ -494,7 +476,7 @@ export const RequestPage: MessageFns<RequestPage> = {
             break;
           }
 
-          message.pageIndex = reader.uint32();
+          message.page = reader.uint32();
           continue;
         }
         case 2: {
@@ -516,15 +498,15 @@ export const RequestPage: MessageFns<RequestPage> = {
 
   fromJSON(object: any): RequestPage {
     return {
-      pageIndex: isSet(object.pageIndex) ? globalThis.Number(object.pageIndex) : 0,
+      page: isSet(object.page) ? globalThis.Number(object.page) : 0,
       pageSize: isSet(object.pageSize) ? globalThis.Number(object.pageSize) : 0,
     };
   },
 
   toJSON(message: RequestPage): unknown {
     const obj: any = {};
-    if (message.pageIndex !== 0) {
-      obj.pageIndex = Math.round(message.pageIndex);
+    if (message.page !== 0) {
+      obj.page = Math.round(message.page);
     }
     if (message.pageSize !== 0) {
       obj.pageSize = Math.round(message.pageSize);
@@ -537,7 +519,7 @@ export const RequestPage: MessageFns<RequestPage> = {
   },
   fromPartial<I extends Exact<DeepPartial<RequestPage>, I>>(object: I): RequestPage {
     const message = createBaseRequestPage();
-    message.pageIndex = object.pageIndex ?? 0;
+    message.page = object.page ?? 0;
     message.pageSize = object.pageSize ?? 0;
     return message;
   },
