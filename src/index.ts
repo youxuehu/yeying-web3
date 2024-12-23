@@ -30,6 +30,7 @@ export {
 } from "./yeying/api/common/code"
 export {
     SecurityAlgorithm,
+    SecurityConfig,
     IdentityMetadata,
     BlockAddress,
     IdentityOrganizationExtend,
