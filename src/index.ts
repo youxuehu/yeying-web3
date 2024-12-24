@@ -11,15 +11,15 @@ import {
     verifyIdentity
 } from "./wallet/identity"
 import {
-    computeHash,
+    computeHash, convertCipherTypeTo,
     decodeBase64,
     decrypt,
-    deriveRawKeyFromPassword,
+    deriveRawKeyFromString,
     encodeBase64,
     encrypt,
     generateIv,
     isBrowser,
-    isNode
+    isNode, decodeString, encodeString, fromDidToPublicKey
 } from "./common/crypto"
 
 export { Identity, IdentityTemplate } from "./wallet/model"
@@ -46,9 +46,13 @@ export const Crypto = {
     generateIv,
     encodeBase64,
     decodeBase64,
+    encodeString,
+    decodeString,
+    fromDidToPublicKey,
     encrypt,
     decrypt,
-    deriveRawKeyFromPassword
+    deriveRawKeyFromString,
+    convertCipherTypeTo,
 }
 
 export const Wallet = {

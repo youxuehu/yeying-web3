@@ -13,7 +13,15 @@ export function isNode(): boolean {
     )
 }
 
-export function encodeBase64(bytes: ArrayBufferLike) {
+export function encodeString(s: string) {
+    return new TextEncoder().encode(s)
+}
+
+export function decodeString(bytes: Uint8Array | ArrayBuffer): string {
+    return new TextDecoder().decode(bytes)
+}
+
+export function encodeBase64(bytes: ArrayBuffer | Uint8Array) {
     return Buffer.from(bytes).toString("base64")
 }
 
@@ -75,7 +83,7 @@ export function convertCipherTypeTo(type: CipherTypeEnum): string {
     }
 }
 
-export async function deriveRawKeyFromPassword(
+export async function deriveRawKeyFromString(
     algorithmName: string,
     password: string
 ): Promise<CryptoKey> {
@@ -98,9 +106,9 @@ export async function deriveRawKeyFromPassword(
 
 export async function encrypt(
     name: string,
-    key: any,
+    key: CryptoKey,
     iv: Uint8Array,
-    content: Uint8Array
+    content: Uint8Array | ArrayBuffer
 ): Promise<ArrayBuffer> {
     let subtleCrypto
     if (isBrowser()) {
@@ -116,9 +124,9 @@ export async function encrypt(
 
 export async function decrypt(
     name: string,
-    key: any,
+    key: CryptoKey,
     iv: Uint8Array,
-    content: Uint8Array
+    content: Uint8Array | ArrayBuffer
 ): Promise<ArrayBuffer> {
     let subtleCrypto
     if (isBrowser()) {

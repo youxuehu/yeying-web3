@@ -20,7 +20,7 @@ import {
     convertCipherTypeTo,
     decodeBase64,
     decrypt,
-    deriveRawKeyFromPassword,
+    deriveRawKeyFromString,
     encodeBase64,
     encrypt,
     fromDidToPublicKey,
@@ -108,7 +108,7 @@ export async function encryptBlockAddress(
     password: string
 ) {
     const algorithmName = convertCipherTypeTo(algorithm.type)
-    const key = await deriveRawKeyFromPassword(algorithmName, password)
+    const key = await deriveRawKeyFromString(algorithmName, password)
     const cipher = await encrypt(
         algorithmName,
         key,
@@ -124,7 +124,7 @@ export async function decryptBlockAddress(
     password: string
 ) {
     const algorithmName = convertCipherTypeTo(algorithm.type)
-    const key = await deriveRawKeyFromPassword(algorithmName, password)
+    const key = await deriveRawKeyFromString(algorithmName, password)
     const plain = await decrypt(
         algorithmName,
         key,
