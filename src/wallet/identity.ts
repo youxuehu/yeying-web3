@@ -1,273 +1,193 @@
-import {
-    CipherTypeEnum,
-    IdentityCodeEnum,
-    LanguageCodeEnum,
-    NetworkTypeEnum
-} from "../yeying/api/common/code"
+import { fromDidToPublicKey, trimLeft } from '../common/codec'
+import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from 'ethers'
+import elliptic from 'elliptic'
 import {
     BlockAddress,
+    Identity,
     IdentityApplicationExtend,
+    IdentityCodeEnum,
     IdentityMetadata,
     IdentityOrganizationExtend,
     IdentityPersonalExtend,
     IdentityServiceExtend,
     Mnemonic,
-    SecurityAlgorithm
-} from "../yeying/api/common/message"
-import { constructIdentifier, Identity, IdentityTemplate } from "./model"
-import {
-    computeHash,
-    convertCipherTypeTo,
-    decodeBase64,
-    decrypt,
-    deriveRawKeyFromString,
-    encodeBase64,
-    encrypt,
-    fromDidToPublicKey,
-    generateIv,
-    trimLeft
-} from "../common/crypto"
-import {
-    computeAddress,
-    defaultPath,
-    HDNodeWallet,
-    Wordlist,
-    wordlists
-} from "ethers"
-import { getCurrentUtcString } from "../common/date"
-import elliptic from "elliptic"
+    NetworkTypeEnum
+} from '../yeying/api/web3/web3_pb'
+import { constructIdentifier, IdentityTemplate } from './model'
+import { getCurrentUtcString } from '../common/date'
+import { Digest } from '../common/digest'
 
-export function recoveryFromMnemonic(
-    mnemonic: Mnemonic,
-    networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING
-) {
+export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: number) {
     const wallet = HDNodeWallet.fromPhrase(
-        mnemonic.phrase,
-        mnemonic.password,
-        mnemonic.path,
-        wordlists[mnemonic.locale]
+        mnemonic.getPhrase(),
+        mnemonic.getPassword(),
+        mnemonic.getPath(),
+        wordlists[mnemonic.getLocale()]
     )
-    return buildBlockAddress(networkType, wallet, mnemonic.path)
+    return buildBlockAddress(networkType, wallet, mnemonic.getPath())
 }
 
 export function createBlockAddress(
-    networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING,
-    language: LanguageCodeEnum = LanguageCodeEnum.LANGUAGE_CODE_ZH_CH,
-    password: string = "",
+    network: NetworkTypeEnum = NetworkTypeEnum.NETWORK_TYPE_YEYING,
+    language: string = 'LANGUAGE_CODE_ZH_CH',
+    password: string = '',
     path: string = defaultPath
 ): BlockAddress {
     let wordlist: Wordlist
     switch (language) {
-        case LanguageCodeEnum.LANGUAGE_CODE_ZH_CH:
-            wordlist = wordlists["zh_cn"]
-        case LanguageCodeEnum.LANGUAGE_CODE_EN_US:
-            wordlist = wordlists["en"]
+        case 'LANGUAGE_CODE_ZH_CH':
+            wordlist = wordlists['zh_cn']
+        case 'LANGUAGE_CODE_EN_US':
+            wordlist = wordlists['en']
         default:
-            wordlist = wordlists["zh_cn"]
+            wordlist = wordlists['zh_cn']
     }
 
     const wallet = HDNodeWallet.createRandom(password, path, wordlist)
-    return buildBlockAddress(networkType, wallet, path)
+    return buildBlockAddress(network, wallet, path)
 }
 
-export async function updateIdentity(
-    password: string,
-    template: IdentityTemplate,
-    identity: Identity
-) {
-    const newIdentity = structuredClone(identity)
-    newIdentity.metadata.name = template.name
-    newIdentity.metadata.description = template.description
-    newIdentity.metadata.parent = template.parent
-    newIdentity.metadata.code = template.code
-    newIdentity.metadata.avatar = template.avatar
-    newIdentity.extend = template.extend
-    newIdentity.metadata.version = identity.metadata.version + 1
-    newIdentity.metadata.checkpoint = getCurrentUtcString()
-
-    const algorithm = template.extend.securityConfig?.algorithm
-    if (algorithm === undefined) {
-        throw new Error("Unknown algorithm")
+export async function updateIdentity(template: IdentityTemplate, identity: Identity, blockAddress: BlockAddress) {
+    // 判断身份是否有效
+    let isValid = await verifyIdentity(identity)
+    if (!isValid) {
+        throw new Error('Invalid identity!')
     }
 
-    const blockAddress = await decryptBlockAddress(
-        identity.blockAddress,
-        algorithm,
-        password
-    )
-    newIdentity.signature = await signIdentity(
-        blockAddress.privateKey,
-        newIdentity
-    )
-    return newIdentity
-}
+    // 克隆身份
+    const newIdentity: Identity = Identity.deserializeBinary(identity.serializeBinary())
 
-export async function encryptBlockAddress(
-    blockAddress: BlockAddress,
-    algorithm: SecurityAlgorithm,
-    password: string
-) {
-    const algorithmName = convertCipherTypeTo(algorithm.type)
-    const key = await deriveRawKeyFromString(algorithmName, password)
-    const cipher = await encrypt(
-        algorithmName,
-        key,
-        decodeBase64(algorithm.iv),
-        BlockAddress.encode(blockAddress).finish()
-    )
-    return encodeBase64(cipher)
-}
+    // 更新元信息
+    const metadata = newIdentity.getMetadata() as IdentityMetadata
+    metadata.setName(template.name)
+    metadata.setDescription(template.description)
+    metadata.setParent(template.parent)
+    metadata.setCode(template.code)
+    metadata.setAvatar(template.avatar)
+    metadata.setVersion(metadata.getVersion() + 1)
+    metadata.setCheckpoint(getCurrentUtcString())
 
-export async function decryptBlockAddress(
-    blockAddress: string,
-    algorithm: SecurityAlgorithm,
-    password: string
-) {
-    const algorithmName = convertCipherTypeTo(algorithm.type)
-    const key = await deriveRawKeyFromString(algorithmName, password)
-    const plain = await decrypt(
-        algorithmName,
-        key,
-        decodeBase64(algorithm.iv),
-        decodeBase64(blockAddress)
-    )
-    return BlockAddress.decode(new Uint8Array(plain))
-}
+    // 更新安全信息
+    newIdentity.setSecurityconfig(template.securityConfig)
 
-export async function createIdentity(
-    password: string,
-    template: IdentityTemplate
-) {
-    const blockAddress = createBlockAddress()
-    const metadata = IdentityMetadata.create({
-        network: template.network,
-        version: 0,
-        did: blockAddress.identifier,
-        address: blockAddress.address,
-        parent: template.parent,
-        name: template.name,
-        description: template.description,
-        code: template.code,
-        avatar: template.avatar,
-        created: getCurrentUtcString(),
-        checkpoint: getCurrentUtcString()
-    })
-
-    if (template.extend.securityConfig === undefined) {
-        template.extend.securityConfig = {
-            algorithm: {
-                type: CipherTypeEnum.CIPHER_TYPE_AES_GCM_256,
-                iv: encodeBase64(generateIv(12))
-            }
+    // 更新扩展信息
+    if (template.extend) {
+        switch (template.code) {
+            case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
+                newIdentity.setPersonalextend(template.extend as IdentityPersonalExtend)
+                break
+            case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
+                newIdentity.setOrganizationextend(template.extend as IdentityOrganizationExtend)
+                break
+            case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
+                newIdentity.setServiceextend(template.extend as IdentityServiceExtend)
+                break
+            case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
+                newIdentity.setApplicationextend(template.extend as IdentityApplicationExtend)
+                break
+            default:
+                throw new Error(`Not supported identity code=${template.code}`)
         }
     }
 
-    const algorithm = template.extend.securityConfig.algorithm
-    if (algorithm === undefined) {
-        throw new Error("Unknown algorithm")
+    // 更新签名
+    await signIdentity(blockAddress.getPrivatekey(), newIdentity)
+
+    // 验证公私钥是否匹配
+    isValid = await verifyIdentity(identity)
+    if (!isValid) {
+        throw new Error('Invalid blockAddress!')
     }
 
-    const cipher = await encryptBlockAddress(blockAddress, algorithm, password)
-    const identity: Identity = {
-        metadata: metadata,
-        blockAddress: cipher,
-        extend: template.extend,
-        signature: ""
+    return newIdentity
+}
+
+export async function createIdentity(
+    blockAddress: BlockAddress,
+    encryptedBlockAddress: string,
+    template: IdentityTemplate
+) {
+    const identity = new Identity()
+    identity.setBlockaddress(encryptedBlockAddress)
+    const metadata = new IdentityMetadata()
+    metadata.setNetwork(template.network)
+    metadata.setDid(blockAddress.getIdentifier())
+    metadata.setAddress(blockAddress.getAddress())
+    metadata.setName(template.name)
+    metadata.setDescription(template.description)
+    metadata.setParent(template.parent)
+    metadata.setCode(template.code)
+    metadata.setAvatar(template.avatar)
+    metadata.setVersion(0)
+    metadata.setCreated(getCurrentUtcString())
+    metadata.setCheckpoint(getCurrentUtcString())
+    identity.setMetadata(metadata)
+    identity.setSecurityconfig(template.securityConfig)
+    // 签名身份
+    await signIdentity(blockAddress.getPrivatekey(), identity)
+
+    // 验证公私钥是否匹配
+    const isValid = await verifyIdentity(identity)
+    if (!isValid) {
+        throw new Error('Invalid blockAddress!')
     }
 
-    identity.signature = await signIdentity(blockAddress.privateKey, identity)
     return identity
 }
 
-export async function verifyIdentity(identity: Identity) {
-    const bytes = serializeIdentity(identity)
-    return await verifyData(identity.metadata.did, bytes, identity.signature)
+export async function signIdentity(privateKey: string, identity: Identity) {
+    identity.setSignature('')
+    const signature = await signData(privateKey, identity.serializeBinary())
+    identity.setSignature(signature)
 }
 
-export async function verifyData(
-    did: string,
-    data: Uint8Array,
-    signature: string
-) {
-    const publicKey = fromDidToPublicKey(did)
-    const ec = new elliptic.ec("secp256k1")
-    const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
-    const hashBytes = await computeHash(data)
+export async function verifyIdentity(identity: Identity) {
+    const signature = identity.getSignature()
+    try {
+        identity.setSignature('')
+        const publicKey = fromDidToPublicKey((identity.getMetadata() as IdentityMetadata).getDid())
+        return await verifyData(publicKey, identity.serializeBinary(), signature)
+    } finally {
+        identity.setSignature(signature)
+    }
+}
+
+export async function verifyData(publicKey: string, data: Uint8Array, signature: string) {
+    return await verifyHashBytes(publicKey, new Digest().update(data).sum(), signature)
+}
+
+export async function verifyHashBytes(publicKey: string, hashBytes: Uint8Array, signature: string) {
+    const ec = new elliptic.ec('secp256k1')
+    const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, '0x'), 'hex')
     return pubKeyEc.verify(hashBytes, signature)
 }
 
 export async function signData(privateKey: string, data: Uint8Array) {
-    const ec = new elliptic.ec("secp256k1")
-    const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
-    const hashBytes = await computeHash(data)
+    return signHashBytes(privateKey, new Digest().update(data).sum())
+}
+
+export async function signHashBytes(privateKey: string, hashBytes: Uint8Array) {
+    const ec = new elliptic.ec('secp256k1')
+    const keyPair = ec.keyFromPrivate(trimLeft(privateKey, '0x'), 'hex')
     const signature = keyPair.sign(hashBytes, { canonical: true })
-    return signature.toDER("hex")
+    return signature.toDER('hex')
 }
 
-export async function signIdentity(privateKey: string, identity: Identity) {
-    const bytes = serializeIdentity(identity)
-    return await signData(privateKey, bytes)
-}
+function buildBlockAddress(networkType: number, wallet: HDNodeWallet, path: string): BlockAddress {
+    const blockAddress = new BlockAddress()
+    blockAddress.setPrivatekey(wallet.privateKey)
+    blockAddress.setAddress(computeAddress(wallet.privateKey))
+    blockAddress.setPublickey(wallet.publicKey)
+    blockAddress.setIdentifier(constructIdentifier(networkType, wallet.publicKey))
 
-function serializeIdentity(identity: Identity): Uint8Array {
-    const binaryWriter = IdentityMetadata.encode(identity.metadata)
-    binaryWriter.string(identity.blockAddress)
-    switch (identity.metadata.code) {
-        case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
-            IdentityServiceExtend.encode(
-                <IdentityServiceExtend>identity.extend,
-                binaryWriter
-            )
-            break
-        case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
-            IdentityApplicationExtend.encode(
-                <IdentityApplicationExtend>identity.extend,
-                binaryWriter
-            )
-            break
-        case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
-            IdentityPersonalExtend.encode(
-                <IdentityPersonalExtend>identity.extend,
-                binaryWriter
-            )
-            break
-        case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
-            IdentityOrganizationExtend.encode(
-                <IdentityOrganizationExtend>identity.extend,
-                binaryWriter
-            )
-            break
-        default:
-            throw new Error(
-                `Not supported identity code=${identity.metadata.code}`
-            )
+    if (wallet.mnemonic !== null) {
+        const mnemonic = new Mnemonic()
+        mnemonic.setPath(path)
+        mnemonic.setPassword(wallet.mnemonic.password)
+        mnemonic.setPhrase(wallet.mnemonic.phrase)
+        mnemonic.setLocale(wallet.mnemonic.wordlist.locale)
+        blockAddress.setMnemonic(mnemonic)
     }
-    return binaryWriter.finish()
-}
 
-function buildBlockAddress(
-    networkType: NetworkTypeEnum,
-    wallet: HDNodeWallet,
-    path: string
-): BlockAddress {
-    const blockAddress = BlockAddress.create({
-        privateKey: wallet.privateKey,
-        address: computeAddress(wallet.privateKey),
-        publicKey: wallet.publicKey,
-        identifier: constructIdentifier(networkType, wallet.publicKey)
-    })
-
-    let mnemonic = wallet.mnemonic
-    if (mnemonic !== null) {
-        return {
-            ...blockAddress,
-            mnemonic: {
-                phrase: mnemonic.phrase,
-                locale: mnemonic.wordlist.locale,
-                path: path,
-                password: mnemonic.password
-            }
-        }
-    }
     return blockAddress
 }

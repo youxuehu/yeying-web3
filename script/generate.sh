@@ -33,12 +33,12 @@ done
 shift $((OPTIND - 1))
 
 language=typescript
-app_type=nodejs
+app_type=browser
 
 output_dir=${idl_dir}/target/${app_type}/${language}
 tool=${idl_dir}/script/compiler.sh
 
-if ! sh "${tool}" -t ${app_type} -m common -l ${language}; then
+if ! sh "${tool}" -t ${app_type} -m web3 -l ${language}; then
   echo "Fail to generate proto code!"
   exit 1
 fi

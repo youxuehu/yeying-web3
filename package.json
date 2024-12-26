@@ -1,6 +1,6 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "author": "yeying.community@gmail.com",
   "description": "A web3 library",
   "main": "dist/bundle.cjs.js",
@@ -41,7 +41,8 @@
   "homepage": "https://github.com/yeying-community/yeying-web3#readme",
   "dependencies": {
     "elliptic": "^6.6.1",
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.4",
+    "google-protobuf": "^3.21.4"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",

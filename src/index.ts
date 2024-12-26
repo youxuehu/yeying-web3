@@ -1,69 +1,43 @@
 import {
     createBlockAddress,
     createIdentity,
-    decryptBlockAddress,
-    encryptBlockAddress,
     recoveryFromMnemonic,
     signData,
+    signHashBytes,
     signIdentity,
     updateIdentity,
     verifyData,
+    verifyHashBytes,
     verifyIdentity
-} from "./wallet/identity"
-import {
-    computeHash, convertCipherTypeTo,
-    decodeBase64,
-    decrypt,
-    deriveRawKeyFromString,
-    encodeBase64,
-    encrypt,
-    generateIv,
-    isBrowser,
-    isNode, decodeString, encodeString, fromDidToPublicKey
-} from "./common/crypto"
+} from './wallet/identity'
+import { fromDidToPublicKey } from './common/codec'
 
-export { Identity, IdentityTemplate } from "./wallet/model"
+export { IdentityTemplate } from './wallet/model'
 export {
-    CipherTypeEnum,
     IdentityCodeEnum,
-    NetworkTypeEnum
-} from "./yeying/api/common/code"
-export {
+    NetworkTypeEnum,
     SecurityAlgorithm,
     SecurityConfig,
+    Identity,
     IdentityMetadata,
     BlockAddress,
+    Mnemonic,
     IdentityOrganizationExtend,
     IdentityPersonalExtend,
     IdentityServiceExtend,
     IdentityApplicationExtend
-} from "./yeying/api/common/message"
+} from './yeying/api/web3/web3_pb'
 
-export const Crypto = {
-    isNode,
-    isBrowser,
-    computeHash,
-    generateIv,
-    encodeBase64,
-    decodeBase64,
-    encodeString,
-    decodeString,
-    fromDidToPublicKey,
-    encrypt,
-    decrypt,
-    deriveRawKeyFromString,
-    convertCipherTypeTo,
-}
-
-export const Wallet = {
+export {
     createBlockAddress,
     recoveryFromMnemonic,
+    signHashBytes,
+    verifyHashBytes,
+    signData,
+    verifyData,
     createIdentity,
     updateIdentity,
     signIdentity,
     verifyIdentity,
-    signData,
-    verifyData,
-    decryptBlockAddress,
-    encryptBlockAddress
+    fromDidToPublicKey
 }

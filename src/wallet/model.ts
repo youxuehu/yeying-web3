@@ -1,41 +1,48 @@
+import { toBeHex } from 'ethers'
 import {
     IdentityApplicationExtend,
-    IdentityMetadata,
+    IdentityCodeEnum,
     IdentityOrganizationExtend,
     IdentityPersonalExtend,
-    IdentityServiceExtend
-} from "../yeying/api/common/message"
-import { IdentityCodeEnum, NetworkTypeEnum } from "../yeying/api/common/code"
-import { toBeHex } from "ethers"
+    IdentityServiceExtend,
+    NetworkTypeEnum,
+    SecurityConfig
+} from '../yeying/api/web3/web3_pb'
 
-export interface Identity {
-    metadata: IdentityMetadata
-    blockAddress: string
-    extend:
-        | IdentityServiceExtend
-        | IdentityOrganizationExtend
-        | IdentityPersonalExtend
-        | IdentityApplicationExtend
-    signature: string
-}
-
-export interface IdentityTemplate {
+export class IdentityTemplate {
+    language: string
     network: NetworkTypeEnum
     parent: string
     code: IdentityCodeEnum
     name: string
     description: string
     avatar: string
-    extend:
-        | IdentityServiceExtend
-        | IdentityOrganizationExtend
-        | IdentityPersonalExtend
-        | IdentityApplicationExtend
+    securityConfig: SecurityConfig
+    extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
+
+    constructor(
+        language: string,
+        network: NetworkTypeEnum,
+        parent: string,
+        code: IdentityCodeEnum,
+        name: string,
+        description: string,
+        avatar: string,
+        securityConfig: SecurityConfig,
+        extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
+    ) {
+        this.language = language
+        this.network = network
+        this.parent = parent
+        this.code = code
+        this.name = name
+        this.description = description
+        this.avatar = avatar
+        this.securityConfig = securityConfig
+        this.extend = extend
+    }
 }
 
-export function constructIdentifier(
-    network: NetworkTypeEnum,
-    publicKey: string
-): string {
+export function constructIdentifier(network: number, publicKey: string): string {
     return `did:ethr:${toBeHex(network)}:${publicKey}`
 }
