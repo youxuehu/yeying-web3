@@ -13,20 +13,7 @@ import {
 import { fromDidToPublicKey } from './common/codec'
 
 export { IdentityTemplate } from './wallet/model'
-export {
-    IdentityCodeEnum,
-    NetworkTypeEnum,
-    SecurityAlgorithm,
-    SecurityConfig,
-    Identity,
-    IdentityMetadata,
-    BlockAddress,
-    Mnemonic,
-    IdentityOrganizationExtend,
-    IdentityPersonalExtend,
-    IdentityServiceExtend,
-    IdentityApplicationExtend
-} from './yeying/api/web3/web3_pb'
+export * from '../yeying/api/web3/web3_pb'
 
 export {
     createBlockAddress,
