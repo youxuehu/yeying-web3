@@ -7,7 +7,7 @@ import {
     IdentityServiceExtend,
     NetworkTypeEnum,
     SecurityConfig
-} from '../../yeying/api/web3/web3_pb'
+} from '../yeying/api/web3/web3_pb'
 
 export class IdentityTemplate {
     language: string

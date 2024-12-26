@@ -1,6 +1,6 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "author": "yeying.community@gmail.com",
   "description": "A web3 library",
   "main": "dist/bundle.cjs.js",
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "dev": "rollup -c -w",
-    "build": "rm -rf dist && rollup -c && find yeying -name \"*.d.ts\" -print | cpio -pdmv dist/",
+    "build": "rm -rf dist && rollup -c && cp -rf src/yeying dist &&find dist/yeying -type f -name \"*.js\" -exec rm -f {} +",
     "test": "jest",
     "format": "prettier --write \"src/**/*.ts\""
   },

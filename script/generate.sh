@@ -43,7 +43,7 @@ if ! sh "${tool}" -t ${app_type} -m web3 -l ${language}; then
   exit 1
 fi
 
-api_directory="${work_dir}"/yeying/api
+api_directory="${work_dir}"/src/yeying/api
 if [ -d "${api_directory}" ]; then
   rm -rvf "${api_directory}"
 fi

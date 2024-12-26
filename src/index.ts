@@ -13,7 +13,7 @@ import {
 import { fromDidToPublicKey } from './common/codec'
 
 export { IdentityTemplate } from './wallet/model'
-export * from '../yeying/api/web3/web3_pb'
+export * from './yeying/api/web3/web3_pb'
 
 export {
     createBlockAddress,

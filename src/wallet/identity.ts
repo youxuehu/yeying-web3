@@ -12,7 +12,7 @@ import {
     IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum
-} from '../../yeying/api/web3/web3_pb'
+} from '../yeying/api/web3/web3_pb'
 import { constructIdentifier, IdentityTemplate } from './model'
 import { getCurrentUtcString } from '../common/date'
 import { Digest } from '../common/digest'
