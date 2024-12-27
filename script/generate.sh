@@ -33,7 +33,7 @@ done
 shift $((OPTIND - 1))
 
 language=typescript
-app_type=browser
+app_type=nodejs
 
 output_dir=${idl_dir}/target/${app_type}/${language}
 tool=${idl_dir}/script/compiler.sh

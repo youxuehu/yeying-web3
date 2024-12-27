@@ -15,7 +15,7 @@ import {
     NetworkTypeEnum,
     SecurityAlgorithm,
     SecurityConfig
-} from "../../src/yeying/api/web3/web3_pb"
+} from "../../src/yeying/api/web3/web3"
 import { Digest } from "../../src/common/digest"
 import { IdentityTemplate } from "../../src/wallet/model"
 
@@ -31,7 +31,7 @@ export async function encryptBlockAddress(
         "encrypt",
         "decrypt"
     ])
-    const cipher = await crypto.subtle.encrypt(algorithm, key, blockAddress.serializeBinary())
+    const cipher = await crypto.subtle.encrypt(algorithm, key, BlockAddress.encode(blockAddress).finish())
     return encodeBase64(cipher)
 }
 
@@ -45,55 +45,63 @@ export async function decryptBlockAddress(
     ])
 
     const plain = await crypto.subtle.decrypt(algorithm, key, decodeBase64(blockAddress))
-    return BlockAddress.deserializeBinary(new Uint8Array(plain))
+    return BlockAddress.decode(new Uint8Array(plain))
 }
 
 
 describe("Identity", () => {
     it("create block address", function() {
         const blockAddress = createBlockAddress()
-        expect(blockAddress.getAddress().length).toEqual(42)
+        expect(blockAddress.address.length).toEqual(42)
     })
 
     it("encrypt and decrypt block address", async () => {
         const blockAddress1 = createBlockAddress()
         const cipher = await encryptBlockAddress(blockAddress1)
         const blockAddress2 = await decryptBlockAddress(cipher)
-        expect(blockAddress2.serializeBinary()).toStrictEqual(blockAddress1.serializeBinary())
+        expect(BlockAddress.encode(blockAddress2).finish()).toStrictEqual(BlockAddress.encode(blockAddress1).finish())
     })
 
     it("recovery from mnemonic", function() {
-        const mnemonic = new Mnemonic()
-        mnemonic.setPath("m/44'/60'/0'/0/0")
-        mnemonic.setPassword("")
-        mnemonic.setLocale("zh_cn")
-        mnemonic.setPhrase("撒 达 生 摸 对 帝 午 伤 紫 拟 妥 万")
+        const mnemonic = Mnemonic.create({
+            path: "m/44'/60'/0'/0/0",
+            locale: "zh_cn",
+            password: "",
+            phrase: "撒 达 生 摸 对 帝 午 伤 紫 拟 妥 万"
+        })
 
-        const blockAddress1 = new BlockAddress()
-        blockAddress1.setPublickey("0x0336a4339191a3e3b05e82b8d8b34e3a28b26426aa5d117c38cdf7d64ef965e8fd")
-        blockAddress1.setPrivatekey("0xbdd197f283b7ee9986ae25a63da92d6ad158493cfca29c9eb750568662105453")
-        blockAddress1.setAddress("0x3B57109aA45e8BDB69c1CE23F9fCf05fB43AF0bd")
-        blockAddress1.setIdentifier("did:ethr:0x07e4:0x0336a4339191a3e3b05e82b8d8b34e3a28b26426aa5d117c38cdf7d64ef965e8fd")
-        blockAddress1.setMnemonic(mnemonic)
+        const blockAddress1 = BlockAddress.create({
+            publicKey: "0x0336a4339191a3e3b05e82b8d8b34e3a28b26426aa5d117c38cdf7d64ef965e8fd",
+            privateKey: "0xbdd197f283b7ee9986ae25a63da92d6ad158493cfca29c9eb750568662105453",
+            address: "0x3B57109aA45e8BDB69c1CE23F9fCf05fB43AF0bd",
+            identifier: "did:ethr:0x07e4:0x0336a4339191a3e3b05e82b8d8b34e3a28b26426aa5d117c38cdf7d64ef965e8fd",
+            mnemonic: mnemonic
+        })
 
         const blockAddress2 = recoveryFromMnemonic(mnemonic, NetworkTypeEnum.NETWORK_TYPE_YEYING)
-        expect(blockAddress1.serializeBinary()).toEqual(blockAddress2.serializeBinary())
+        expect(BlockAddress.encode(blockAddress1).finish()).toEqual(BlockAddress.encode(blockAddress2).finish())
     })
 
     it("sign and verify identity", async () => {
         const blockAddress = createBlockAddress()
         const encryptedBlockAddress = await encryptBlockAddress(blockAddress)
 
-        const extend = new IdentityApplicationExtend()
-        extend.setCode("APPLICATION_CODE_WAREHOUSE")
-        extend.setServicecodesList(["SERVICE_CODE_AGENT"])
-        extend.setLocation("location1")
-        extend.setHash("hash1")
-        const algorithm = new SecurityAlgorithm()
-        algorithm.setName("CIPHER_TYPE_AES_GCM_256")
-        algorithm.setIv(encodeBase64(iv))
-        const securityConfig = new SecurityConfig()
-        securityConfig.setAlgorithm(algorithm)
+        const extend = IdentityApplicationExtend.create({
+            code: "APPLICATION_CODE_WAREHOUSE",
+            serviceCodes: ["SERVICE_CODE_AGENT"],
+            location: "location1",
+            hash: "hash1"
+        })
+
+        const algorithm = SecurityAlgorithm.create({
+            name: "CIPHER_TYPE_AES_GCM_256",
+            iv: encodeBase64(iv)
+        })
+
+        const securityConfig = SecurityConfig.create({
+            algorithm: algorithm
+        })
+
         const template: IdentityTemplate = {
             language: "LANGUAGE_CODE_ZH_CH",
             parent: "",
@@ -119,15 +127,21 @@ describe("Identity", () => {
         const blockAddress = createBlockAddress()
         const encryptedBlockAddress = await encryptBlockAddress(blockAddress)
 
-        const extend = new IdentityPersonalExtend()
-        extend.setEmail("email1")
-        extend.setTelephone("telephone1")
-        extend.setExtend("extend1")
-        const algorithm = new SecurityAlgorithm()
-        algorithm.setName("CIPHER_TYPE_AES_GCM_256")
-        algorithm.setIv(encodeBase64(iv))
-        const securityConfig = new SecurityConfig()
-        securityConfig.setAlgorithm(algorithm)
+        const extend = IdentityPersonalExtend.create({
+            email: "email1",
+            telephone: "telephone1",
+            extend: "extend1"
+        })
+
+        const algorithm = SecurityAlgorithm.create({
+            name: "CIPHER_TYPE_AES_GCM_256",
+            iv: encodeBase64(iv)
+        })
+
+        const securityConfig = SecurityConfig.create({
+            algorithm: algorithm
+        })
+
         const template: IdentityTemplate = {
             language: "LANGUAGE_CODE_ZH_CH",
             parent: "",
@@ -147,11 +161,11 @@ describe("Identity", () => {
 
         template.name = "name2"
         template.avatar = "avatar2"
-        extend.setEmail("email2")
+        extend.email = "email2"
 
         const newIdentity = await updateIdentity(template, identity, blockAddress)
-        expect(newIdentity.getMetadata()?.getName()).toEqual("name2")
-        expect(newIdentity.getMetadata()?.getAvatar()).toEqual("avatar2")
-        expect(newIdentity.getPersonalextend()?.getEmail()).toEqual("email2")
+        expect(newIdentity.metadata?.name).toEqual("name2")
+        expect(newIdentity.metadata?.avatar).toEqual("avatar2")
+        expect(newIdentity.personalExtend?.email).toEqual("email2")
     })
 })
