@@ -1,5 +1,5 @@
 import { fromDidToPublicKey, trimLeft } from '../common/codec'
-import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from 'ethers'
+import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from "ethers"
 import elliptic from 'elliptic'
 import {
     BlockAddress,
@@ -17,7 +17,7 @@ import { constructIdentifier, IdentityTemplate } from './model'
 import { getCurrentUtcString } from '../common/date'
 import { Digest } from '../common/digest'
 
-export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: number) {
+export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTypeEnum) {
     const wallet = HDNodeWallet.fromPhrase(
         mnemonic.getPhrase(),
         mnemonic.getPassword(),
@@ -173,7 +173,7 @@ export async function signHashBytes(privateKey: string, hashBytes: Uint8Array) {
     return signature.toDER('hex')
 }
 
-function buildBlockAddress(networkType: number, wallet: HDNodeWallet, path: string): BlockAddress {
+function buildBlockAddress(networkType: NetworkTypeEnum, wallet: HDNodeWallet, path: string): BlockAddress {
     const blockAddress = new BlockAddress()
     blockAddress.setPrivatekey(wallet.privateKey)
     blockAddress.setAddress(computeAddress(wallet.privateKey))

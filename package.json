@@ -1,18 +1,18 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "author": "yeying.community@gmail.com",
   "description": "A web3 library",
-  "main": "dist/bundle.cjs.js",
-  "module": "dist/bundle.esm.js",
-  "browser": "dist/bundle.umd.js",
+  "main": "dist/yeying-web3.cjs.js",
+  "module": "dist/yeying-web3.esm.js",
+  "browser": "dist/yeying-web3.umd.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
   "scripts": {
     "dev": "rollup -c -w",
-    "build": "rm -rf dist && rollup -c && cp -rf src/yeying dist &&find dist/yeying -type f -name \"*.js\" -exec rm -f {} +",
+    "build": "rm -rf dist && rollup -c && cp -rf src/yeying dist",
     "test": "jest",
     "format": "prettier --write \"src/**/*.ts\""
   },

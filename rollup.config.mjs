@@ -6,17 +6,17 @@ export default {
     input: './src/index.ts',
     output: [
         {
-            file: 'dist/bundle.cjs.js',
+            file: 'dist/yeying-web3.cjs.js',
             format: 'cjs',
             sourcemap: true,
         },
         {
-            file: 'dist/bundle.esm.js',
+            file: 'dist/yeying-web3.esm.js',
             format: 'esm',
             sourcemap: true,
         },
         {
-            file: 'dist/bundle.umd.js',
+            file: 'dist/yeying-web3.umd.js',
             format: 'umd',
             name: 'YeYingWeb3',
             sourcemap: true,

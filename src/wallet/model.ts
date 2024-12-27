@@ -43,6 +43,6 @@ export class IdentityTemplate {
     }
 }
 
-export function constructIdentifier(network: number, publicKey: string): string {
+export function constructIdentifier(network: NetworkTypeEnum, publicKey: string): string {
     return `did:ethr:${toBeHex(network)}:${publicKey}`
 }
