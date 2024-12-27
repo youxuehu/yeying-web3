@@ -120,11 +120,29 @@ export async function createIdentity(
         created: getCurrentUtcString(),
         checkpoint: getCurrentUtcString()
     })
+
     const identity = Identity.create({
         blockAddress: encryptedBlockAddress,
         metadata: metadata,
-        securityConfig: template.securityConfig
+        securityConfig: {...template.securityConfig}
     })
+
+    switch (metadata.code) {
+        case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
+            identity.applicationExtend = {...template.extend} as IdentityApplicationExtend
+            break
+        case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
+            identity.serviceExtend = {...template.extend} as IdentityServiceExtend
+            break
+        case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
+            identity.organizationExtend = {...template.extend} as IdentityOrganizationExtend
+            break
+        case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
+            identity.personalExtend = {...template.extend} as IdentityPersonalExtend
+            break
+        default:
+            throw new Error(`Not supported identity code=${template.code}`)
+    }
 
     // 签名身份
     await signIdentity(blockAddress.privateKey, identity)
