@@ -2,16 +2,16 @@ export function encodeString(s: string) {
     return new TextEncoder().encode(s)
 }
 
-export function decodeString(bytes: Uint8Array | ArrayBuffer): string {
+export function decodeString(bytes: Uint8Array): string {
     return new TextDecoder().decode(bytes)
 }
 
-export function encodeBase64(bytes: ArrayBuffer | Uint8Array) {
-    return Buffer.from(bytes).toString('base64')
+export function encodeBase64(bytes: Uint8Array) {
+    return Buffer.from(bytes).toString("base64")
 }
 
 export function decodeBase64(str: string) {
-    return Buffer.from(str, 'base64')
+    return Buffer.from(str, "base64")
 }
 
 export function fromDidToPublicKey(did: string) {
@@ -19,8 +19,8 @@ export function fromDidToPublicKey(did: string) {
         return did
     }
 
-    const publicKey = did.slice(did.lastIndexOf(':') + 1)
-    return trimLeft(publicKey, '0x')
+    const publicKey = did.slice(did.lastIndexOf(":") + 1)
+    return trimLeft(publicKey, "0x")
 }
 
 export function trimLeft(str: string, trim: string) {

@@ -32,7 +32,7 @@ export async function encryptBlockAddress(
         "decrypt"
     ])
     const cipher = await crypto.subtle.encrypt(algorithm, key, BlockAddress.encode(blockAddress).finish())
-    return encodeBase64(cipher)
+    return encodeBase64(new Uint8Array(cipher))
 }
 
 export async function decryptBlockAddress(

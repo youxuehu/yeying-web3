@@ -68,7 +68,9 @@ export async function updateIdentity(template: IdentityTemplate, identity: Ident
     metadata.checkpoint = getCurrentUtcString()
 
     // 更新安全信息
-    newIdentity.securityConfig = template.securityConfig
+    if (template.securityConfig) {
+        newIdentity.securityConfig = template.securityConfig
+    }
 
     // 更新扩展信息
     if (template.extend) {
