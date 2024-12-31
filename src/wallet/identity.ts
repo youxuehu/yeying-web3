@@ -1,6 +1,6 @@
-import { fromDidToPublicKey, trimLeft } from "../common/codec"
-import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from "ethers"
-import elliptic from "elliptic"
+import { fromDidToPublicKey, trimLeft } from '../common/codec'
+import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from 'ethers'
+import elliptic from 'elliptic'
 import {
     BlockAddress,
     Identity,
@@ -12,11 +12,11 @@ import {
     IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum
-} from "../yeying/api/web3/web3"
-import { constructIdentifier, IdentityTemplate } from "./model"
-import { getCurrentUtcString } from "../common/date"
-import { Digest } from "../common/digest"
-import { signHashBytes, verifyHashBytes } from "../common/signature"
+} from '../yeying/api/web3/web3'
+import { constructIdentifier, IdentityTemplate } from './model'
+import { getCurrentUtcString } from '../common/date'
+import { Digest } from '../common/digest'
+import { signHashBytes, verifyHashBytes } from '../common/signature'
 
 export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTypeEnum) {
     const wallet = HDNodeWallet.fromPhrase(
@@ -30,18 +30,18 @@ export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTyp
 
 export function createBlockAddress(
     network: NetworkTypeEnum = NetworkTypeEnum.NETWORK_TYPE_YEYING,
-    language: string = "LANGUAGE_CODE_ZH_CH",
-    password: string = "",
+    language: string = 'LANGUAGE_CODE_ZH_CH',
+    password: string = '',
     path: string = defaultPath
 ): BlockAddress {
     let wordlist: Wordlist
     switch (language) {
-        case "LANGUAGE_CODE_ZH_CH":
-            wordlist = wordlists["zh_cn"]
-        case "LANGUAGE_CODE_EN_US":
-            wordlist = wordlists["en"]
+        case 'LANGUAGE_CODE_ZH_CH':
+            wordlist = wordlists['zh_cn']
+        case 'LANGUAGE_CODE_EN_US':
+            wordlist = wordlists['en']
         default:
-            wordlist = wordlists["zh_cn"]
+            wordlist = wordlists['zh_cn']
     }
 
     const wallet = HDNodeWallet.createRandom(password, path, wordlist)
@@ -52,7 +52,7 @@ export async function updateIdentity(template: IdentityTemplate, identity: Ident
     // 判断身份是否有效
     let isValid = await verifyIdentity(identity)
     if (!isValid) {
-        throw new Error("Invalid identity!")
+        throw new Error('Invalid identity!')
     }
 
     // 克隆身份
@@ -99,7 +99,7 @@ export async function updateIdentity(template: IdentityTemplate, identity: Ident
     // 验证公私钥是否匹配
     isValid = await verifyIdentity(identity)
     if (!isValid) {
-        throw new Error("Invalid blockAddress!")
+        throw new Error('Invalid blockAddress!')
     }
 
     return newIdentity
@@ -126,25 +126,30 @@ export async function createIdentity(
 
     const identity = Identity.create({
         blockAddress: encryptedBlockAddress,
-        metadata: metadata,
-        securityConfig: {...template.securityConfig}
+        metadata: metadata
     })
 
-    switch (metadata.code) {
-        case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
-            identity.applicationExtend = {...template.extend} as IdentityApplicationExtend
-            break
-        case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
-            identity.serviceExtend = {...template.extend} as IdentityServiceExtend
-            break
-        case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
-            identity.organizationExtend = {...template.extend} as IdentityOrganizationExtend
-            break
-        case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
-            identity.personalExtend = {...template.extend} as IdentityPersonalExtend
-            break
-        default:
-            throw new Error(`Not supported identity code=${template.code}`)
+    if (template.securityConfig) {
+        identity.securityConfig = template.securityConfig
+    }
+
+    if (template.extend) {
+        switch (metadata.code) {
+            case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
+                identity.applicationExtend = template.extend as IdentityApplicationExtend
+                break
+            case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
+                identity.serviceExtend = template.extend as IdentityServiceExtend
+                break
+            case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
+                identity.organizationExtend = template.extend as IdentityOrganizationExtend
+                break
+            case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
+                identity.personalExtend = template.extend as IdentityPersonalExtend
+                break
+            default:
+                throw new Error(`Not supported identity code=${template.code}`)
+        }
     }
 
     // 签名身份
@@ -153,14 +158,14 @@ export async function createIdentity(
     // 验证公私钥是否匹配
     const isValid = await verifyIdentity(identity)
     if (!isValid) {
-        throw new Error("Invalid blockAddress!")
+        throw new Error('Invalid blockAddress!')
     }
 
     return identity
 }
 
 export async function signIdentity(privateKey: string, identity: Identity) {
-    identity.signature = ""
+    identity.signature = ''
     const signature = await signData(privateKey, Identity.encode(identity).finish())
     identity.signature = signature
 }
@@ -168,7 +173,7 @@ export async function signIdentity(privateKey: string, identity: Identity) {
 export async function verifyIdentity(identity: Identity) {
     const signature = identity.signature
     try {
-        identity.signature = ""
+        identity.signature = ''
         const publicKey = fromDidToPublicKey((identity.metadata as IdentityMetadata).did)
         return await verifyData(publicKey, Identity.encode(identity).finish(), signature)
     } finally {
@@ -180,13 +185,9 @@ export async function verifyData(publicKey: string, data: Uint8Array, signature:
     return await verifyHashBytes(publicKey, new Digest().update(data).sum(), signature)
 }
 
-
-
 export async function signData(privateKey: string, data: Uint8Array) {
     return signHashBytes(privateKey, new Digest().update(data).sum())
 }
-
-
 
 function buildBlockAddress(networkType: NetworkTypeEnum, wallet: HDNodeWallet, path: string): BlockAddress {
     const blockAddress = BlockAddress.create({

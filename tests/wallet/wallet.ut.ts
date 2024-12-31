@@ -161,7 +161,11 @@ describe("Identity", () => {
 
         template.name = "name2"
         template.avatar = "avatar2"
-        extend.email = "email2"
+        template.extend = IdentityPersonalExtend.create({
+            email: "email2",
+            telephone: "telephone2",
+            extend: "extend1"
+        })
 
         const newIdentity = await updateIdentity(template, identity, blockAddress)
         expect(newIdentity.metadata?.name).toEqual("name2")
