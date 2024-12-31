@@ -17,8 +17,8 @@ export class IdentityTemplate {
     name: string
     description: string
     avatar: string
-    securityConfig: SecurityConfig
-    extend: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
+    securityConfig?: SecurityConfig
+    extend?: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
 
     constructor(
         language: string,
