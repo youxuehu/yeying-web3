@@ -16,6 +16,7 @@ import {
 import { constructIdentifier, IdentityTemplate } from "./model"
 import { getCurrentUtcString } from "../common/date"
 import { Digest } from "../common/digest"
+import { signHashBytes, verifyHashBytes } from "../common/signature"
 
 export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTypeEnum) {
     const wallet = HDNodeWallet.fromPhrase(
@@ -179,22 +180,13 @@ export async function verifyData(publicKey: string, data: Uint8Array, signature:
     return await verifyHashBytes(publicKey, new Digest().update(data).sum(), signature)
 }
 
-export async function verifyHashBytes(publicKey: string, hashBytes: Uint8Array, signature: string) {
-    const ec = new elliptic.ec("secp256k1")
-    const pubKeyEc = ec.keyFromPublic(trimLeft(publicKey, "0x"), "hex")
-    return pubKeyEc.verify(hashBytes, signature)
-}
+
 
 export async function signData(privateKey: string, data: Uint8Array) {
     return signHashBytes(privateKey, new Digest().update(data).sum())
 }
 
-export async function signHashBytes(privateKey: string, hashBytes: Uint8Array) {
-    const ec = new elliptic.ec("secp256k1")
-    const keyPair = ec.keyFromPrivate(trimLeft(privateKey, "0x"), "hex")
-    const signature = keyPair.sign(hashBytes, { canonical: true })
-    return signature.toDER("hex")
-}
+
 
 function buildBlockAddress(networkType: NetworkTypeEnum, wallet: HDNodeWallet, path: string): BlockAddress {
     const blockAddress = BlockAddress.create({
