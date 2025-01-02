@@ -5,9 +5,9 @@ import {
     IdentityOrganizationExtend,
     IdentityPersonalExtend,
     IdentityServiceExtend,
-    NetworkTypeEnum,
+    NetworkTypeEnum, Registry,
     SecurityConfig
-} from '../yeying/api/web3/web3'
+} from "../yeying/api/web3/web3"
 
 export class IdentityTemplate {
     language: string
@@ -19,7 +19,7 @@ export class IdentityTemplate {
     avatar: string
     securityConfig?: SecurityConfig
     extend?: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
-
+    registry?: Registry;
     constructor(
         language: string,
         network: NetworkTypeEnum,
@@ -29,7 +29,8 @@ export class IdentityTemplate {
         description: string,
         avatar: string,
         securityConfig?: SecurityConfig,
-        extend?: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend
+        extend?: IdentityServiceExtend | IdentityOrganizationExtend | IdentityPersonalExtend | IdentityApplicationExtend,
+        registry?: Registry,
     ) {
         this.language = language
         this.network = network
@@ -40,6 +41,7 @@ export class IdentityTemplate {
         this.avatar = avatar
         this.securityConfig = securityConfig
         this.extend = extend
+        this.registry = registry
     }
 }
 

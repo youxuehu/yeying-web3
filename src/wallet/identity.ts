@@ -11,6 +11,7 @@ import {
     IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum,
+    Registry,
     SecurityConfig
 } from "../yeying/api/web3/web3"
 import { constructIdentifier, IdentityTemplate } from "./model"
@@ -93,6 +94,10 @@ export async function updateIdentity(template: IdentityTemplate, identity: Ident
         }
     }
 
+    if (template.registry) {
+        newIdentity.registry = template.registry
+    }
+
     // 更新签名
     await signIdentity(blockAddress.privateKey, newIdentity)
 
@@ -126,7 +131,8 @@ export async function createIdentity(
 
     const identity = Identity.create({
         blockAddress: encryptedBlockAddress,
-        metadata: metadata
+        metadata: metadata,
+        registry: template.registry
     })
 
     if (template.securityConfig) {

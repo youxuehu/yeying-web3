@@ -113,11 +113,16 @@ export interface Identity {
   metadata: IdentityMetadata | undefined;
   blockAddress: string;
   securityConfig: SecurityConfig | undefined;
+  registry: Registry | undefined;
+  signature: string;
   personalExtend?: IdentityPersonalExtend | undefined;
   serviceExtend?: IdentityServiceExtend | undefined;
   organizationExtend?: IdentityOrganizationExtend | undefined;
   applicationExtend?: IdentityApplicationExtend | undefined;
-  signature: string;
+}
+
+export interface Registry {
+  nodes: string[];
 }
 
 export interface IdentityMetadata {
@@ -202,11 +207,12 @@ function createBaseIdentity(): Identity {
     metadata: undefined,
     blockAddress: "",
     securityConfig: undefined,
+    registry: undefined,
+    signature: "",
     personalExtend: undefined,
     serviceExtend: undefined,
     organizationExtend: undefined,
     applicationExtend: undefined,
-    signature: "",
   };
 }
 
@@ -221,20 +227,23 @@ export const Identity: MessageFns<Identity> = {
     if (message.securityConfig !== undefined) {
       SecurityConfig.encode(message.securityConfig, writer.uint32(26).fork()).join();
     }
-    if (message.personalExtend !== undefined) {
-      IdentityPersonalExtend.encode(message.personalExtend, writer.uint32(34).fork()).join();
-    }
-    if (message.serviceExtend !== undefined) {
-      IdentityServiceExtend.encode(message.serviceExtend, writer.uint32(42).fork()).join();
-    }
-    if (message.organizationExtend !== undefined) {
-      IdentityOrganizationExtend.encode(message.organizationExtend, writer.uint32(50).fork()).join();
-    }
-    if (message.applicationExtend !== undefined) {
-      IdentityApplicationExtend.encode(message.applicationExtend, writer.uint32(58).fork()).join();
+    if (message.registry !== undefined) {
+      Registry.encode(message.registry, writer.uint32(34).fork()).join();
     }
     if (message.signature !== "") {
-      writer.uint32(66).string(message.signature);
+      writer.uint32(42).string(message.signature);
+    }
+    if (message.personalExtend !== undefined) {
+      IdentityPersonalExtend.encode(message.personalExtend, writer.uint32(50).fork()).join();
+    }
+    if (message.serviceExtend !== undefined) {
+      IdentityServiceExtend.encode(message.serviceExtend, writer.uint32(58).fork()).join();
+    }
+    if (message.organizationExtend !== undefined) {
+      IdentityOrganizationExtend.encode(message.organizationExtend, writer.uint32(66).fork()).join();
+    }
+    if (message.applicationExtend !== undefined) {
+      IdentityApplicationExtend.encode(message.applicationExtend, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -275,7 +284,7 @@ export const Identity: MessageFns<Identity> = {
             break;
           }
 
-          message.personalExtend = IdentityPersonalExtend.decode(reader, reader.uint32());
+          message.registry = Registry.decode(reader, reader.uint32());
           continue;
         }
         case 5: {
@@ -283,7 +292,7 @@ export const Identity: MessageFns<Identity> = {
             break;
           }
 
-          message.serviceExtend = IdentityServiceExtend.decode(reader, reader.uint32());
+          message.signature = reader.string();
           continue;
         }
         case 6: {
@@ -291,7 +300,7 @@ export const Identity: MessageFns<Identity> = {
             break;
           }
 
-          message.organizationExtend = IdentityOrganizationExtend.decode(reader, reader.uint32());
+          message.personalExtend = IdentityPersonalExtend.decode(reader, reader.uint32());
           continue;
         }
         case 7: {
@@ -299,7 +308,7 @@ export const Identity: MessageFns<Identity> = {
             break;
           }
 
-          message.applicationExtend = IdentityApplicationExtend.decode(reader, reader.uint32());
+          message.serviceExtend = IdentityServiceExtend.decode(reader, reader.uint32());
           continue;
         }
         case 8: {
@@ -307,7 +316,15 @@ export const Identity: MessageFns<Identity> = {
             break;
           }
 
-          message.signature = reader.string();
+          message.organizationExtend = IdentityOrganizationExtend.decode(reader, reader.uint32());
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.applicationExtend = IdentityApplicationExtend.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -324,6 +341,8 @@ export const Identity: MessageFns<Identity> = {
       metadata: isSet(object.metadata) ? IdentityMetadata.fromJSON(object.metadata) : undefined,
       blockAddress: isSet(object.blockAddress) ? globalThis.String(object.blockAddress) : "",
       securityConfig: isSet(object.securityConfig) ? SecurityConfig.fromJSON(object.securityConfig) : undefined,
+      registry: isSet(object.registry) ? Registry.fromJSON(object.registry) : undefined,
+      signature: isSet(object.signature) ? globalThis.String(object.signature) : "",
       personalExtend: isSet(object.personalExtend) ? IdentityPersonalExtend.fromJSON(object.personalExtend) : undefined,
       serviceExtend: isSet(object.serviceExtend) ? IdentityServiceExtend.fromJSON(object.serviceExtend) : undefined,
       organizationExtend: isSet(object.organizationExtend)
@@ -332,7 +351,6 @@ export const Identity: MessageFns<Identity> = {
       applicationExtend: isSet(object.applicationExtend)
         ? IdentityApplicationExtend.fromJSON(object.applicationExtend)
         : undefined,
-      signature: isSet(object.signature) ? globalThis.String(object.signature) : "",
     };
   },
 
@@ -347,6 +365,12 @@ export const Identity: MessageFns<Identity> = {
     if (message.securityConfig !== undefined) {
       obj.securityConfig = SecurityConfig.toJSON(message.securityConfig);
     }
+    if (message.registry !== undefined) {
+      obj.registry = Registry.toJSON(message.registry);
+    }
+    if (message.signature !== "") {
+      obj.signature = message.signature;
+    }
     if (message.personalExtend !== undefined) {
       obj.personalExtend = IdentityPersonalExtend.toJSON(message.personalExtend);
     }
@@ -358,9 +382,6 @@ export const Identity: MessageFns<Identity> = {
     }
     if (message.applicationExtend !== undefined) {
       obj.applicationExtend = IdentityApplicationExtend.toJSON(message.applicationExtend);
-    }
-    if (message.signature !== "") {
-      obj.signature = message.signature;
     }
     return obj;
   },
@@ -377,6 +398,10 @@ export const Identity: MessageFns<Identity> = {
     message.securityConfig = (object.securityConfig !== undefined && object.securityConfig !== null)
       ? SecurityConfig.fromPartial(object.securityConfig)
       : undefined;
+    message.registry = (object.registry !== undefined && object.registry !== null)
+      ? Registry.fromPartial(object.registry)
+      : undefined;
+    message.signature = object.signature ?? "";
     message.personalExtend = (object.personalExtend !== undefined && object.personalExtend !== null)
       ? IdentityPersonalExtend.fromPartial(object.personalExtend)
       : undefined;
@@ -389,7 +414,64 @@ export const Identity: MessageFns<Identity> = {
     message.applicationExtend = (object.applicationExtend !== undefined && object.applicationExtend !== null)
       ? IdentityApplicationExtend.fromPartial(object.applicationExtend)
       : undefined;
-    message.signature = object.signature ?? "";
+    return message;
+  },
+};
+
+function createBaseRegistry(): Registry {
+  return { nodes: [] };
+}
+
+export const Registry: MessageFns<Registry> = {
+  encode(message: Registry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.nodes) {
+      writer.uint32(10).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Registry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegistry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.nodes.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Registry {
+    return { nodes: globalThis.Array.isArray(object?.nodes) ? object.nodes.map((e: any) => globalThis.String(e)) : [] };
+  },
+
+  toJSON(message: Registry): unknown {
+    const obj: any = {};
+    if (message.nodes?.length) {
+      obj.nodes = message.nodes;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Registry>, I>>(base?: I): Registry {
+    return Registry.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Registry>, I>>(object: I): Registry {
+    const message = createBaseRegistry();
+    message.nodes = object.nodes?.map((e) => e) || [];
     return message;
   },
 };
