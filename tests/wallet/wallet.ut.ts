@@ -1,6 +1,7 @@
 import {
     createBlockAddress,
     createIdentity,
+    deriveFromBlockAddress,
     recoveryFromMnemonic,
     updateIdentity,
     verifyIdentity
@@ -24,10 +25,9 @@ const password: string = "123456"
 const algorithm = { name: "AES-GCM", iv: iv }
 
 export async function encryptBlockAddress(
-    blockAddress: BlockAddress
+    blockAddress: BlockAddress, rawKey: Uint8Array
 ) {
-    const passwordHash = new Digest().update(new TextEncoder().encode(password)).sum()
-    const key = await crypto.subtle.importKey("raw", passwordHash, algorithm.name, false, [
+    const key = await crypto.subtle.importKey("raw", rawKey, algorithm.name, false, [
         "encrypt",
         "decrypt"
     ])
@@ -36,10 +36,9 @@ export async function encryptBlockAddress(
 }
 
 export async function decryptBlockAddress(
-    blockAddress: string
+    blockAddress: string, rawKey: Uint8Array
 ): Promise<BlockAddress> {
-    const passwordHash = new Digest().update(new TextEncoder().encode(password)).sum()
-    const key = await crypto.subtle.importKey("raw", passwordHash, algorithm.name, false, [
+    const key = await crypto.subtle.importKey("raw", rawKey, algorithm.name, false, [
         "encrypt",
         "decrypt"
     ])
@@ -48,17 +47,21 @@ export async function decryptBlockAddress(
     return BlockAddress.decode(new Uint8Array(plain))
 }
 
-
 describe("Identity", () => {
-    it("create block address", function() {
-        const blockAddress = createBlockAddress()
-        expect(blockAddress.address.length).toEqual(42)
+    it("create block address", async function() {
+        const blockAddress1 = createBlockAddress()
+        expect(blockAddress1.address.length).toEqual(42)
+        const rawKey = deriveFromBlockAddress(blockAddress1)
+        const cipher = await encryptBlockAddress(blockAddress1, rawKey)
+        const blockAddress2 = await decryptBlockAddress(cipher, rawKey)
+        expect(BlockAddress.encode(blockAddress2).finish()).toStrictEqual(BlockAddress.encode(blockAddress1).finish())
     })
 
-    it("encrypt and decrypt block address", async () => {
+    it("encrypt and decrypt block address with password", async () => {
+        const rawKey = new Digest().update(new TextEncoder().encode(password)).sum()
         const blockAddress1 = createBlockAddress()
-        const cipher = await encryptBlockAddress(blockAddress1)
-        const blockAddress2 = await decryptBlockAddress(cipher)
+        const cipher = await encryptBlockAddress(blockAddress1, rawKey)
+        const blockAddress2 = await decryptBlockAddress(cipher, rawKey)
         expect(BlockAddress.encode(blockAddress2).finish()).toStrictEqual(BlockAddress.encode(blockAddress1).finish())
     })
 
@@ -84,7 +87,7 @@ describe("Identity", () => {
 
     it("sign and verify identity", async () => {
         const blockAddress = createBlockAddress()
-        const encryptedBlockAddress = await encryptBlockAddress(blockAddress)
+        const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
 
         const extend = IdentityApplicationExtend.create({
             code: "APPLICATION_CODE_WAREHOUSE",
@@ -125,7 +128,7 @@ describe("Identity", () => {
 
     it("update identity", async () => {
         const blockAddress = createBlockAddress()
-        const encryptedBlockAddress = await encryptBlockAddress(blockAddress)
+        const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
 
         const extend = IdentityPersonalExtend.create({
             email: "email1",

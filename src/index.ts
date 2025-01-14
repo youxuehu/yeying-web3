@@ -1,4 +1,5 @@
 export {
+    deriveFromBlockAddress,
     createBlockAddress,
     createIdentity,
     recoveryFromMnemonic,

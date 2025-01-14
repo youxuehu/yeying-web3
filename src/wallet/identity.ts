@@ -1,4 +1,4 @@
-import { fromDidToPublicKey } from "../common/codec"
+import { fromDidToPublicKey, trimLeft } from "../common/codec"
 import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from "ethers"
 import {
     BlockAddress,
@@ -11,13 +11,13 @@ import {
     IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum,
-    Registry,
     SecurityConfig
 } from "../yeying/api/web3/web3"
 import { constructIdentifier, IdentityTemplate } from "./model"
 import { getCurrentUtcString } from "../common/date"
 import { Digest } from "../common/digest"
 import { signHashBytes, verifyHashBytes } from "../common/signature"
+import elliptic from "elliptic"
 
 export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTypeEnum) {
     const wallet = HDNodeWallet.fromPhrase(
@@ -27,6 +27,14 @@ export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTyp
         wordlists[mnemonic.locale]
     )
     return buildBlockAddress(networkType, wallet, mnemonic.path)
+}
+
+export function deriveFromBlockAddress(blockAddress: BlockAddress): Uint8Array {
+    const ec = new elliptic.ec("secp256k1")
+    const priKeyEc = ec.keyFromPrivate(trimLeft(blockAddress.privateKey, "0x"), "hex")
+    const pubKeyEc = ec.keyFromPublic(trimLeft(blockAddress.publicKey, "0x"), "hex")
+    const deriveKey = priKeyEc.derive(pubKeyEc.getPublic())
+    return new Uint8Array(deriveKey.toArray("be"))
 }
 
 export function createBlockAddress(

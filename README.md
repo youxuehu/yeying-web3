@@ -13,6 +13,6 @@ How to compile contract?
 1. Install solc with `npm install solc --save-dev`
 
 
-Run integration test?
-1. Run command `npm test -- -u --testMatch="**/tests/**/*.it.ts"`
+Run unit test?
+1. Run command `npm run test -- tests/**/*.ut.ts`
 
