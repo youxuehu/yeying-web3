@@ -1,0 +1,7 @@
+{
+ "entryPoints": ["src/index.ts"],
+ "out": "docs",
+ "exclude": ["**/*.it.ts", "**/*.ut.ts"],
+ "tsconfig": "tsconfig.json",
+ "readme": "introduce.md"
+}
