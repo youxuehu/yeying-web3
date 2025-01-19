@@ -14,7 +14,8 @@
     "dev": "rollup -c -w",
     "build": "rm -rf dist && rollup -c",
     "test": "jest",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "docs": "typedoc --out docs src"
   },
   "repository": {
     "type": "git",
@@ -56,6 +57,7 @@
     "rollup-plugin-typescript2": "^0.36.0",
     "ts-jest": "^29.2.5",
     "ts-proto": "^2.6.0",
+    "typedoc": "^0.27.6",
     "typescript": "^5.7.2"
   }
 }
