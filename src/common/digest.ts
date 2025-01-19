@@ -1,14 +1,36 @@
+/**
+ * Digest 类用于实现 SHA-256 哈希算法的计算。
+ * 
+ * 该类用于更新和计算数据的哈希值，并最终返回计算结果。
+ * 
+ * @class
+ */
 export class Digest {
+    /** 哈希值数组，存储计算过程中的哈希状态。 */
     private hash: number[]
+
+    /** 最后更新的数据。 */
     private lastData: any
+
+    /** 数据的总长度。 */
     private size: any
 
+    /**
+     * 创建一个新的 Digest 实例，并初始化哈希状态。
+     * 默认使用 SHA-256 初始哈希值。
+     */
     constructor() {
         this.hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]
         this.size = 0
         this.lastData = undefined
     }
 
+    /**
+     * 更新哈希计算过程。
+     * 
+     * @param data - 新的数据块，用于更新哈希值。
+     * @returns 当前实例，便于链式调用。
+     */
     update(data: Uint8Array) {
         if (this.lastData) {
             this.hash = this.sha256(bytesToWords(this.lastData), this.hash)
@@ -18,6 +40,13 @@ export class Digest {
         return this
     }
 
+    /**
+     * 完成哈希计算并返回结果。
+     * 
+     * 该方法在计算完所有输入数据后调用，返回最终的哈希值。
+     * 
+     * @returns 完成的哈希值，作为 Uint8Array 类型。
+     */
     sum() {
         if (this.lastData) {
             const nBitsTotal = this.size * 8
@@ -34,6 +63,13 @@ export class Digest {
         return new Uint8Array(wordsToBytes(this.hash))
     }
 
+    /**
+     * SHA-256 哈希计算的核心算法。
+     * 
+     * @param m - 输入数据，转换为的数字表示。
+     * @param H - 当前哈希值状态。
+     * @returns 更新后的哈希值。
+     */
     private sha256(m: number[], H: any[]) {
         let w: any[] = [],
             a,
@@ -101,6 +137,7 @@ export class Digest {
         return H
     }
 }
+
 
 const K = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,
