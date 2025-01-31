@@ -2,16 +2,22 @@ import {
     createBlockAddress,
     createIdentity,
     deriveFromBlockAddress,
+    deserializeIdentityFromBinary,
+    deserializeIdentityFromJson,
     recoveryFromMnemonic,
+    serializeIdentityToBinary,
+    serializeIdentityToJson,
     updateIdentity,
     verifyIdentity
 } from "../../src/wallet/identity"
 import { decodeBase64, encodeBase64 } from "../../src/common/codec"
 import {
     BlockAddress,
+    Identity,
     IdentityApplicationExtend,
     IdentityCodeEnum,
     IdentityPersonalExtend,
+    IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum,
     SecurityAlgorithm,
@@ -91,7 +97,7 @@ describe("Identity", () => {
 
         const extend = IdentityApplicationExtend.create({
             code: "APPLICATION_CODE_WAREHOUSE",
-            serviceCodes: ["SERVICE_CODE_AGENT"],
+            serviceCodes: ["SERVICE_CODE_WAREHOUSE", "SERVICE_CODE_AGENT"],
             location: "location1",
             hash: "hash1"
         })
@@ -110,7 +116,7 @@ describe("Identity", () => {
             parent: "",
             network: NetworkTypeEnum.NETWORK_TYPE_YEYING,
             code: IdentityCodeEnum.IDENTITY_CODE_APPLICATION,
-            name: "name1",
+            name: "application1",
             description: "description1",
             avatar: "avatar1",
             extend: extend,
@@ -174,5 +180,60 @@ describe("Identity", () => {
         expect(newIdentity.metadata?.name).toEqual("name2")
         expect(newIdentity.metadata?.avatar).toEqual("avatar2")
         expect(newIdentity.personalExtend?.email).toEqual("email2")
+    })
+
+    it("serialize and deserialize identity", async () => {
+        const blockAddress = createBlockAddress()
+        const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
+
+        const extendJson = {
+            code: "SERVICE_CODE_WAREHOUSE",
+            apis: "API_CODE_USER,API_CODE_ASSET",
+            proxy: "http://localhost:8641",
+            grpc: "localhost:9301"
+        }
+
+        const extend1 = IdentityServiceExtend.create(extendJson)
+        // 不能直接强制转化json成protoc对象，导致序列化不一致
+        const extend2 = IdentityServiceExtend.decode(IdentityServiceExtend.encode(extend1).finish())
+        expect(extend1).toStrictEqual(extend2)
+
+        const algorithm = SecurityAlgorithm.create({
+            name: "CIPHER_TYPE_AES_GCM_256",
+            iv: encodeBase64(iv)
+        })
+
+        const securityConfig = SecurityConfig.create({
+            algorithm: algorithm
+        })
+
+        const template: IdentityTemplate = {
+            language: "LANGUAGE_CODE_ZH_CH",
+            parent: "",
+            network: NetworkTypeEnum.NETWORK_TYPE_YEYING,
+            code: IdentityCodeEnum.IDENTITY_CODE_APPLICATION,
+            name: "name1",
+            description: "service1",
+            avatar: "avatar1",
+            extend: extend1,
+            securityConfig: securityConfig
+        }
+
+        const identity = await createIdentity(
+            blockAddress,
+            encryptedBlockAddress,
+            template)
+
+        const success = await verifyIdentity(identity)
+        expect(success).toBeTruthy()
+
+        const s = serializeIdentityToJson(identity)
+        let newIdentity: Identity
+        newIdentity = deserializeIdentityFromJson(s)
+        expect(newIdentity).toStrictEqual(identity)
+
+        const b = serializeIdentityToBinary(identity)
+        newIdentity = deserializeIdentityFromBinary(b)
+        expect(newIdentity).toStrictEqual(identity)
     })
 })

@@ -1,8 +1,8 @@
 /**
  * Digest 类用于实现 SHA-256 哈希算法的计算。
- * 
+ *
  * 该类用于更新和计算数据的哈希值，并最终返回计算结果。
- * 
+ *
  * @class
  */
 export class Digest {
@@ -27,7 +27,7 @@ export class Digest {
 
     /**
      * 更新哈希计算过程。
-     * 
+     *
      * @param data - 新的数据块，用于更新哈希值。
      * @returns 当前实例，便于链式调用。
      */
@@ -42,9 +42,9 @@ export class Digest {
 
     /**
      * 完成哈希计算并返回结果。
-     * 
+     *
      * 该方法在计算完所有输入数据后调用，返回最终的哈希值。
-     * 
+     *
      * @returns 完成的哈希值，作为 Uint8Array 类型。
      */
     sum() {
@@ -65,7 +65,7 @@ export class Digest {
 
     /**
      * SHA-256 哈希计算的核心算法。
-     * 
+     *
      * @param m - 输入数据，转换为的数字表示。
      * @param H - 当前哈希值状态。
      * @returns 更新后的哈希值。
@@ -137,7 +137,6 @@ export class Digest {
         return H
     }
 }
-
 
 const K = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,

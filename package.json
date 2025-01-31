@@ -1,6 +1,6 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "author": "yeying.community@gmail.com",
   "description": "A web3 library",
   "main": "dist/yeying-web3.cjs.js",
