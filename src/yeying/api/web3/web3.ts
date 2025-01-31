@@ -145,9 +145,9 @@ export interface IdentityMetadata {
   /** 身份头像 */
   avatar: string;
   /** 身份创建utc时间 */
-  created: string;
+  createdAt: string;
   /** 身份修改utc时间 */
-  checkpoint: string;
+  updatedAt: string;
 }
 
 export interface BlockAddress {
@@ -487,8 +487,8 @@ function createBaseIdentityMetadata(): IdentityMetadata {
     description: "",
     code: 0,
     avatar: "",
-    created: "",
-    checkpoint: "",
+    createdAt: "",
+    updatedAt: "",
   };
 }
 
@@ -521,11 +521,11 @@ export const IdentityMetadata: MessageFns<IdentityMetadata> = {
     if (message.avatar !== "") {
       writer.uint32(74).string(message.avatar);
     }
-    if (message.created !== "") {
-      writer.uint32(82).string(message.created);
+    if (message.createdAt !== "") {
+      writer.uint32(82).string(message.createdAt);
     }
-    if (message.checkpoint !== "") {
-      writer.uint32(90).string(message.checkpoint);
+    if (message.updatedAt !== "") {
+      writer.uint32(90).string(message.updatedAt);
     }
     return writer;
   },
@@ -614,7 +614,7 @@ export const IdentityMetadata: MessageFns<IdentityMetadata> = {
             break;
           }
 
-          message.created = reader.string();
+          message.createdAt = reader.string();
           continue;
         }
         case 11: {
@@ -622,7 +622,7 @@ export const IdentityMetadata: MessageFns<IdentityMetadata> = {
             break;
           }
 
-          message.checkpoint = reader.string();
+          message.updatedAt = reader.string();
           continue;
         }
       }
@@ -645,8 +645,8 @@ export const IdentityMetadata: MessageFns<IdentityMetadata> = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       code: isSet(object.code) ? identityCodeEnumFromJSON(object.code) : 0,
       avatar: isSet(object.avatar) ? globalThis.String(object.avatar) : "",
-      created: isSet(object.created) ? globalThis.String(object.created) : "",
-      checkpoint: isSet(object.checkpoint) ? globalThis.String(object.checkpoint) : "",
+      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
+      updatedAt: isSet(object.updatedAt) ? globalThis.String(object.updatedAt) : "",
     };
   },
 
@@ -679,11 +679,11 @@ export const IdentityMetadata: MessageFns<IdentityMetadata> = {
     if (message.avatar !== "") {
       obj.avatar = message.avatar;
     }
-    if (message.created !== "") {
-      obj.created = message.created;
+    if (message.createdAt !== "") {
+      obj.createdAt = message.createdAt;
     }
-    if (message.checkpoint !== "") {
-      obj.checkpoint = message.checkpoint;
+    if (message.updatedAt !== "") {
+      obj.updatedAt = message.updatedAt;
     }
     return obj;
   },
@@ -702,8 +702,8 @@ export const IdentityMetadata: MessageFns<IdentityMetadata> = {
     message.description = object.description ?? "";
     message.code = object.code ?? 0;
     message.avatar = object.avatar ?? "";
-    message.created = object.created ?? "";
-    message.checkpoint = object.checkpoint ?? "";
+    message.createdAt = object.createdAt ?? "";
+    message.updatedAt = object.updatedAt ?? "";
     return message;
   },
 };

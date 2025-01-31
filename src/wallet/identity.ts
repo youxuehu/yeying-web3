@@ -160,7 +160,7 @@ export async function updateIdentity(template: IdentityTemplate, identity: Ident
     metadata.code = template.code
     metadata.avatar = template.avatar
     metadata.version = metadata.version + 1
-    metadata.checkpoint = getCurrentUtcString()
+    metadata.createdAt = getCurrentUtcString()
 
     // 更新安全信息
     if (template.securityConfig) {
@@ -238,8 +238,8 @@ export async function createIdentity(
         code: template.code,
         avatar: template.avatar,
         version: 0,
-        created: getCurrentUtcString(),
-        checkpoint: getCurrentUtcString()
+        createdAt: getCurrentUtcString(),
+        updatedAt: getCurrentUtcString()
     })
 
     const identity = Identity.create({
