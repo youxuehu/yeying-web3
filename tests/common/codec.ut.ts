@@ -1,4 +1,5 @@
 import { decodeBase64, encodeBase64 } from "../../src/common/codec"
+import { NetworkTypeEnum } from "../../src"
 
 describe("Codec", () => {
     it("base64", async function() {
@@ -20,5 +21,15 @@ describe("Codec", () => {
         const content2 = new Uint8Array(decodeBase64(str2))
         expect(content1).toStrictEqual(content)
         expect(content2).toStrictEqual(content)
+    })
+
+    it("enum", () => {
+        let type: NetworkTypeEnum
+        type = NetworkTypeEnum['TEST' as keyof typeof NetworkTypeEnum]
+        expect(type).toBeUndefined()
+        type = NetworkTypeEnum['NETWORK_TYPE_YEYING' as keyof typeof NetworkTypeEnum]
+        expect(type).toBe(NetworkTypeEnum.NETWORK_TYPE_YEYING)
+        const str = NetworkTypeEnum[NetworkTypeEnum.NETWORK_TYPE_YEYING]
+        expect(str).toBe('NETWORK_TYPE_YEYING')
     })
 })

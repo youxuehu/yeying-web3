@@ -167,6 +167,7 @@ export interface Mnemonic {
 
 export interface IdentityServiceExtend {
   code: string;
+  /** 应用输出的api编码，用逗号隔开 */
   apis: string;
   proxy: string;
   grpc: string;
@@ -187,7 +188,8 @@ export interface IdentityPersonalExtend {
 
 export interface IdentityApplicationExtend {
   code: string;
-  serviceCodes: string[];
+  /** 应用依赖的服务编码，用逗号隔开 */
+  serviceCodes: string;
   location: string;
   hash: string;
   extend: string;
@@ -1251,7 +1253,7 @@ export const IdentityPersonalExtend: MessageFns<IdentityPersonalExtend> = {
 };
 
 function createBaseIdentityApplicationExtend(): IdentityApplicationExtend {
-  return { code: "", serviceCodes: [], location: "", hash: "", extend: "" };
+  return { code: "", serviceCodes: "", location: "", hash: "", extend: "" };
 }
 
 export const IdentityApplicationExtend: MessageFns<IdentityApplicationExtend> = {
@@ -1259,8 +1261,8 @@ export const IdentityApplicationExtend: MessageFns<IdentityApplicationExtend> = 
     if (message.code !== "") {
       writer.uint32(10).string(message.code);
     }
-    for (const v of message.serviceCodes) {
-      writer.uint32(18).string(v!);
+    if (message.serviceCodes !== "") {
+      writer.uint32(18).string(message.serviceCodes);
     }
     if (message.location !== "") {
       writer.uint32(26).string(message.location);
@@ -1294,7 +1296,7 @@ export const IdentityApplicationExtend: MessageFns<IdentityApplicationExtend> = 
             break;
           }
 
-          message.serviceCodes.push(reader.string());
+          message.serviceCodes = reader.string();
           continue;
         }
         case 3: {
@@ -1333,9 +1335,7 @@ export const IdentityApplicationExtend: MessageFns<IdentityApplicationExtend> = 
   fromJSON(object: any): IdentityApplicationExtend {
     return {
       code: isSet(object.code) ? globalThis.String(object.code) : "",
-      serviceCodes: globalThis.Array.isArray(object?.serviceCodes)
-        ? object.serviceCodes.map((e: any) => globalThis.String(e))
-        : [],
+      serviceCodes: isSet(object.serviceCodes) ? globalThis.String(object.serviceCodes) : "",
       location: isSet(object.location) ? globalThis.String(object.location) : "",
       hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
       extend: isSet(object.extend) ? globalThis.String(object.extend) : "",
@@ -1347,7 +1347,7 @@ export const IdentityApplicationExtend: MessageFns<IdentityApplicationExtend> = 
     if (message.code !== "") {
       obj.code = message.code;
     }
-    if (message.serviceCodes?.length) {
+    if (message.serviceCodes !== "") {
       obj.serviceCodes = message.serviceCodes;
     }
     if (message.location !== "") {
@@ -1368,7 +1368,7 @@ export const IdentityApplicationExtend: MessageFns<IdentityApplicationExtend> = 
   fromPartial<I extends Exact<DeepPartial<IdentityApplicationExtend>, I>>(object: I): IdentityApplicationExtend {
     const message = createBaseIdentityApplicationExtend();
     message.code = object.code ?? "";
-    message.serviceCodes = object.serviceCodes?.map((e) => e) || [];
+    message.serviceCodes = object.serviceCodes ?? "";
     message.location = object.location ?? "";
     message.hash = object.hash ?? "";
     message.extend = object.extend ?? "";

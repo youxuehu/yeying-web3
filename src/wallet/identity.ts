@@ -142,7 +142,11 @@ export function createBlockAddress(
  *
  * @throws {Error} 如果身份无效或验证失败，将抛出错误。
  */
-export async function updateIdentity(template: IdentityTemplate, identity: Identity, blockAddress: BlockAddress) {
+export async function updateIdentity(
+    template: Partial<IdentityTemplate>,
+    identity: Identity,
+    blockAddress: BlockAddress
+) {
     // 判断身份是否有效
     let isValid = await verifyIdentity(identity)
     if (!isValid) {
@@ -154,33 +158,60 @@ export async function updateIdentity(template: IdentityTemplate, identity: Ident
 
     // 更新元信息
     const metadata = newIdentity.metadata as IdentityMetadata
-    metadata.name = template.name
-    metadata.description = template.description
-    metadata.parent = template.parent
-    metadata.code = template.code
-    metadata.avatar = template.avatar
+    metadata.name = template.name ?? metadata.name
+    metadata.description = template.description ?? metadata.description
+    metadata.parent = template.parent ?? metadata.parent
+    metadata.avatar = template.avatar ?? metadata.avatar
     metadata.version = metadata.version + 1
-    metadata.createdAt = getCurrentUtcString()
+    metadata.updatedAt = getCurrentUtcString()
 
-    // 更新安全信息
-    if (template.securityConfig) {
-        newIdentity.securityConfig = SecurityConfig.create(template.securityConfig)
-    }
+    // TODO: 更新安全信息，不能随意更新，这里需要策略
+    // if (template.securityConfig) {
+    //     newIdentity.securityConfig = SecurityConfig.create(template.securityConfig)
+    // }
 
     // 更新扩展信息
-    if (template.extend) {
-        switch (template.code) {
+    const extend = template.extend
+    if (extend) {
+        switch (metadata.code) {
             case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
-                newIdentity.personalExtend = IdentityPersonalExtend.create(template.extend)
+                const personalExtend = extend as IdentityPersonalExtend
+                newIdentity.personalExtend = IdentityPersonalExtend.create({
+                    email: personalExtend.email ?? identity.personalExtend?.email,
+                    telephone: personalExtend.telephone ?? identity.personalExtend?.telephone,
+                    extend: personalExtend.extend ?? identity.personalExtend?.extend
+                })
+
                 break
             case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
-                newIdentity.organizationExtend = IdentityOrganizationExtend.create(template.extend)
+                const organizationExtend = extend as IdentityOrganizationExtend
+                newIdentity.organizationExtend = IdentityOrganizationExtend.create({
+                    address: organizationExtend.address ?? identity.organizationExtend?.address,
+                    code: organizationExtend.code ?? identity.organizationExtend?.code,
+                    extend: organizationExtend.extend ?? identity.organizationExtend?.extend
+                })
+
                 break
             case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
-                newIdentity.serviceExtend = IdentityServiceExtend.create(template.extend)
+                const serviceExtend = extend as IdentityServiceExtend
+                newIdentity.serviceExtend = IdentityServiceExtend.create({
+                    code: serviceExtend.code ?? identity.serviceExtend?.code,
+                    apis: serviceExtend.apis ?? identity.serviceExtend?.apis,
+                    proxy: serviceExtend.proxy ?? identity.serviceExtend?.proxy,
+                    grpc: serviceExtend.grpc ?? identity.serviceExtend?.grpc,
+                    extend: serviceExtend.extend ?? identity.serviceExtend?.extend
+                })
+
                 break
             case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
-                newIdentity.applicationExtend = IdentityApplicationExtend.create(template.extend)
+                const applicationExtend = extend as IdentityApplicationExtend
+                newIdentity.applicationExtend = IdentityApplicationExtend.create({
+                    code: applicationExtend.code ?? identity.applicationExtend?.code,
+                    serviceCodes: applicationExtend.serviceCodes ?? identity.applicationExtend?.serviceCodes,
+                    location: applicationExtend.location ?? identity.applicationExtend?.location,
+                    hash: applicationExtend.hash ?? identity.applicationExtend?.hash,
+                    extend: applicationExtend.extend ?? identity.applicationExtend?.extend
+                })
                 break
             default:
                 throw new Error(`Not supported identity code=${template.code}`)

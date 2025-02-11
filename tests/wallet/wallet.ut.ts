@@ -16,7 +16,6 @@ import {
     Identity,
     IdentityApplicationExtend,
     IdentityCodeEnum,
-    IdentityPersonalExtend,
     IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum,
@@ -97,7 +96,7 @@ describe("Identity", () => {
 
         const extend = IdentityApplicationExtend.create({
             code: "APPLICATION_CODE_WAREHOUSE",
-            serviceCodes: ["SERVICE_CODE_WAREHOUSE", "SERVICE_CODE_AGENT"],
+            serviceCodes: "SERVICE_CODE_WAREHOUSE,SERVICE_CODE_AGENT",
             location: "location1",
             hash: "hash1"
         })
@@ -136,12 +135,6 @@ describe("Identity", () => {
         const blockAddress = createBlockAddress()
         const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
 
-        const extend = IdentityPersonalExtend.create({
-            email: "email1",
-            telephone: "telephone1",
-            extend: "extend1"
-        })
-
         const algorithm = SecurityAlgorithm.create({
             name: "CIPHER_TYPE_AES_GCM_256",
             iv: encodeBase64(iv)
@@ -159,7 +152,11 @@ describe("Identity", () => {
             name: "name1",
             description: "description1",
             avatar: "avatar1",
-            extend: extend,
+            extend: {
+                email: "email1",
+                telephone: "telephone1",
+                extend: "extend1"
+            },
             securityConfig: securityConfig
         }
 
@@ -168,18 +165,20 @@ describe("Identity", () => {
             encryptedBlockAddress,
             template)
 
-        template.name = "name2"
-        template.avatar = "avatar2"
-        template.extend = IdentityPersonalExtend.create({
-            email: "email2",
-            telephone: "telephone2",
-            extend: "extend1"
-        })
+        const newTemplate = {
+            name: "name2",
+            extend: {
+                telephone: "telephone2",
+                extend: "extend1"
+            }
+        }
 
-        const newIdentity = await updateIdentity(template, identity, blockAddress)
+        const newIdentity = await updateIdentity(newTemplate, identity, blockAddress)
         expect(newIdentity.metadata?.name).toEqual("name2")
-        expect(newIdentity.metadata?.avatar).toEqual("avatar2")
-        expect(newIdentity.personalExtend?.email).toEqual("email2")
+        expect(newIdentity.metadata?.avatar).toEqual("avatar1")
+        expect(newIdentity.personalExtend?.email).toEqual("email1")
+        expect(newIdentity.personalExtend?.telephone).toEqual("telephone2")
+        expect(newIdentity.personalExtend?.extend).toEqual("extend1")
     })
 
     it("serialize and deserialize identity", async () => {
