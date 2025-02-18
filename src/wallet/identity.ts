@@ -19,41 +19,96 @@ import { Digest } from '../common/digest'
 import { signHashBytes, verifyHashBytes } from '../common/signature'
 import elliptic from 'elliptic'
 
+/**
+ * 将身份（Identity）对象序列化为二进制数据。
+ * 该函数使用 `Identity.encode` 方法将身份对象编码为二进制数据。
+ * @param identity - 身份对象
+ * @returns 返回序列化后的二进制数据（Uint8Array 格式）
+ * @example
+ * ```ts
+ * const identity = {
+ *   metadata: { did: 'example-did', name: 'Example Identity' },
+ *   blockAddress: 'encrypted-block-address',
+ *   signature: 'example-signature'
+ * }
+ * const binaryData = serializeIdentityToBinary(identity)
+ * console.log(binaryData)
+ * ```
+ */
 export function serializeIdentityToBinary(identity: Identity): Uint8Array {
     return Identity.encode(identity).finish()
 }
 
+/**
+ * 从二进制数据中反序列化身份（Identity）对象。
+ * 该函数使用 `Identity.decode` 方法将二进制数据解码为身份对象。
+ * @param binary - 包含身份信息的二进制数据（Uint8Array 格式）
+ * @returns 返回反序列化后的身份对象
+ * @example
+ * ```ts
+ * const binaryData = new Uint8Array( 二进制数据 )
+ * const identity = deserializeIdentityFromBinary(binaryData)
+ * console.log(identity)
+ * ```
+ */
 export function deserializeIdentityFromBinary(binary: Uint8Array): Identity {
     return Identity.decode(binary)
 }
 
+/**
+ * 将身份（Identity）对象序列化为 JSON 字符串。
+ * 该函数使用 `Identity.toJSON` 方法将身份对象转换为 JavaScript 对象，然后将其序列化为 JSON 字符串。
+ * @param identity - 身份对象
+ * @returns 返回序列化后的 JSON 字符串
+ * @example
+ * ```ts
+ * const identity = {
+ *   metadata: { did: 'example-did', name: 'Example Identity' },
+ *   blockAddress: 'encrypted-block-address',
+ *   signature: 'example-signature'
+ * }
+ * const identityJson = serializeIdentityToJson(identity)
+ * console.log(identityJson)
+ * ```
+ */
 export function serializeIdentityToJson(identity: Identity): string {
     return JSON.stringify(Identity.toJSON(identity))
 }
 
+/**
+ * 从 JSON 字符串中反序列化身份（Identity）对象。
+ * 该函数将 JSON 字符串解析为 JavaScript 对象，然后使用 `Identity.fromJSON` 方法将其转换为身份对象。
+ * @param str - 包含身份信息的 JSON 字符串
+ * @returns 返回反序列化后的身份对象
+ * @example
+ * ```ts
+ * const identityJson = '{"metadata": {"did": "example-did", "name": "Example Identity"}, "blockAddress": "encrypted-block-address", "signature": "example-signature"}'
+ * const identity = deserializeIdentityFromJson(identityJson)
+ * console.log(identity)
+ * ```
+ */
 export function deserializeIdentityFromJson(str: string): Identity {
     return Identity.fromJSON(JSON.parse(str))
 }
 
 /**
- * 从助记词恢复区块地址。
- *
- * 该函数使用给定的助记词（`mnemonic`）来恢复钱包，并基于恢复的的钱包信息创建一个区块地址。
- *
- * @param mnemonic - 包含助记词、密码、路径和语言信息的对象。
- * @param networkType - 网络类型枚举，指定要创建的区块地址对应的网络。
- * @returns 返回恢复的区块地址（`BlockAddress` 类型）。
- *
+ * 从助记词恢复 BlockAddress。
+ * 该函数使用助记词、密码和路径生成 HD 钱包，并构建对应的 BlockAddress。
+ * @param mnemonic - 助记词对象，包含助记词短语、密码、路径和语言
+ * @param networkType - 网络类型（如 NETWORK_TYPE_YEYING）
+ * @returns 返回恢复的 BlockAddress 对象
  * @example
- * const mnemonic: Mnemonic = {
- *     phrase: "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon",
- *     password: "your_password",
- *     path: "m/44'/60'/0'/0",
- *     locale: "en"
- * };
- * const networkType: NetworkTypeEnum = NetworkTypeEnum.NETWORK_TYPE_YEYING;
- * const blockAddress = recoveryFromMnemonic(mnemonic, networkType);
- * console.log(blockAddress);
+ * ```ts
+ * const mnemonic = {
+ *   phrase: 'abandon abandon abandon ...',
+ *   password: 'myPassword',
+ *   path: "m/44'/0'/0'/0/0",
+ *   locale: 'en'
+ * }
+ * const networkType = NetworkTypeEnum.NETWORK_TYPE_YEYING
+ * const blockAddress = recoveryFromMnemonic(mnemonic, networkType)
+ * console.log(blockAddress)
+ * ```
  */
 export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTypeEnum) {
     const wallet = HDNodeWallet.fromPhrase(
@@ -66,17 +121,16 @@ export function recoveryFromMnemonic(mnemonic: Mnemonic, networkType: NetworkTyp
 }
 
 /**
- * 从区块链地址派生密钥对。
- *
- * 该函数使用 elliptic 库中的 `secp256k1` 曲线，基于提供的区块链地址（包括私钥和公钥）生成一个派生密钥。
- *
- * @param blockAddress - 包含私钥和公钥的区块链地址对象
- * @returns 返回派生的密钥（`Uint8Array` 类型）
- *
+ * 从 BlockAddress 中派生出一个加密密钥。
+ * 使用椭圆曲线密码学（Elliptic Curve Cryptography, ECC）的 `secp256k1` 曲线，
+ * 通过私钥和公钥的椭圆曲线点乘操作生成派生密钥。
+ * @param blockAddress - 包含私钥和公钥的 BlockAddress 对象
+ * @returns 返回派生的密钥（Uint8Array）
  * @example
- * const blockAddress = { privateKey: "0x1234...", publicKey: "0x5678..." };
- * const derivedKey = deriveFromBlockAddress(blockAddress);
- * console.log(derivedKey); // 打印派生后的密钥
+ * ```ts
+ * const blockAddress = { privateKey: '0x...', publicKey: '0x...' }
+ * const derivedKey = deriveFromBlockAddress(blockAddress)
+ * ```
  */
 export function deriveFromBlockAddress(blockAddress: BlockAddress): Uint8Array {
     const ec = new elliptic.ec('secp256k1')
@@ -87,19 +141,19 @@ export function deriveFromBlockAddress(blockAddress: BlockAddress): Uint8Array {
 }
 
 /**
- * 创建一个区块链地址。
- *
- * 该函数生成一个新的区块链地址，支持选择不同的语言和网络类型。通过密码和路径生成一个随机的 HD 钱包，并构建一个 BlockAddress 对象。
- *
- * @param network - 网络类型，默认为 `NetworkTypeEnum.NETWORK_TYPE_YEYING`。
- * @param language - 语言代码，默认为 `"LANGUAGE_CODE_ZH_CH"`，支持中文（简体）和英文（美国）。
- * @param password - 钱包密码，默认为空字符串（不加密）。
- * @param path - 钱包生成路径，默认为 `defaultPath`。
- * @returns 返回生成的区块链地址（`BlockAddress` 类型）。
- *
+ * 创建一个新的 BlockAddress。
+ * 该函数生成一个基于指定网络、语言和路径的 BlockAddress。
+ * 如果提供了密码，将用于增强安全性。
+ * @param network - 网络类型（默认为 NETWORK_TYPE_YEYING）
+ * @param language - 语言代码（默认为 'LANGUAGE_CODE_ZH_CH'，即中文）
+ * @param password - 可选的密码，用于增强安全性（默认为空字符串）
+ * @param path - 可选的路径（默认为默认路径）
+ * @returns 返回生成的 BlockAddress 对象
  * @example
- * const blockAddress = createBlockAddress(NetworkTypeEnum.NETWORK_TYPE_YEYING, "LANGUAGE_CODE_EN_US", "password123", "m/44'/60'/0'/0/0");
- * console.log(blockAddress);
+ * ```ts
+ * const blockAddress = createBlockAddress(NetworkTypeEnum.NETWORK_TYPE_YEYING, 'LANGUAGE_CODE_ZH_CH', 'myPassword')
+ * console.log(blockAddress)
+ * ```
  */
 export function createBlockAddress(
     network: NetworkTypeEnum = NetworkTypeEnum.NETWORK_TYPE_YEYING,
@@ -129,18 +183,25 @@ export function createBlockAddress(
 }
 
 /**
- * 更新身份信息。
- *
- * 该函数首先验证传入的身份是否有效。如果身份有效，则克隆身份对象并更新其中的元信息、安全信息、扩展信息和注册信息。
- * 最后，更新身份的签名，并验证身份信息的公私钥匹配性。
- *
- * @param template - 包含身份更新内容的模板，类型为 `IdentityTemplate`。
- * @param identity - 需要更新的原身份对象，类型为 `Identity`。
- * @param blockAddress - 用于身份签名的区块地址，包含私钥等信息，类型为 `BlockAddress`。
- *
- * @returns 返回更新后的身份对象，类型为 `Identity`。
- *
- * @throws {Error} 如果身份无效或验证失败，将抛出错误。
+ * 更新身份（Identity）信息。
+ * 该函数根据提供的模板更新身份的元数据、扩展信息和注册信息，并重新签名。
+ * 更新操作会验证身份的有效性，并确保公私钥匹配。
+ * @param template - 包含更新信息的部分身份模板
+ * @param identity - 原始身份对象
+ * @param blockAddress - 包含私钥的 BlockAddress 对象，用于签名
+ * @returns 返回更新后的身份对象
+ * @example
+ * ```ts
+ * const template = {
+ *   name: 'Updated Name',
+ *   description: 'Updated description',
+ *   extend: { 更新的扩展信息 }
+ * }
+ * const identity = { 原始对象信息 }
+ * const blockAddress = { privateKey: 'example-private-key', 其他字段}
+ * const updatedIdentity = await updateIdentity(template, identity, blockAddress)
+ * console.log(updatedIdentity)
+ * ```
  */
 export async function updateIdentity(
     template: Partial<IdentityTemplate>,
@@ -235,24 +296,27 @@ export async function updateIdentity(
 }
 
 /**
- * 创建一个身份对象。
- *
- * 该函数基于提供的区块地址、加密的区块地址以及身份模板，生成一个完整的身份对象。身份对象包括元数据、扩展信息、签名以及验证步骤。
- *
- * @param blockAddress - 区块地址对象，包含身份的基本信息（如 DID、地址等）。
- * @param encryptedBlockAddress - 加密的区块地址，用于存储和传输。
- * @param template - 身份模板，包含身份的详细配置，如网络类型、名称、描述、父级身份、扩展信息等。
- * @returns 返回创建的身份对象（`Identity` 类型）。
- *
- * @throws {Error} 如果验证失败，则抛出错误 "Invalid blockAddress!"。
- *
+ * 创建一个新的身份（）。
+ * 该函数根据提供的 BlockAddress、加密的 BlockAddress 和身份模板生成一个身份对象。
+ * 身份对象包含元数据、扩展信息和安全配置，并通过私钥签名验证。
+ * @param blockAddress - 包含 DID、地址和私钥的 BlockAddress 对象
+ * @param encryptedBlockAddress - 加密后的 BlockAddress 字符串
+ * @param template - 身份模板，包含身份的基本信息和扩展信息
+ * @returns 返回创建的身份对象
  * @example
- * const blockAddress: BlockAddress = {
- *     identifier: "did:example:12345",
- *     address: "0xabcdef...",
- *     privateKey: "0xprivatekey..."
- * };
- * const encryptedBlockAddress: string = "encryptedAddressString";
+ * ```ts
+ * const blockAddress = { identifier: 'example-did', address: 'example-address', privateKey: 'example-private-key' }
+ * const encryptedBlockAddress = 'encrypted-block-address-string'
+ * const template = {
+ *   network: 'NETWORK_TYPE_YEYING',
+ *   name: 'Example Identity',
+ *   description: 'This is an example identity',
+ *   code: IdentityCodeEnum.IDENTITY_CODE_PERSONAL,
+ *   extend: { ' 扩展信息 ' }
+ * }
+ * const identity = await createIdentity(blockAddress, encryptedBlockAddress, template)
+ * console.log(identity)
+ * ```
  */
 export async function createIdentity(
     blockAddress: BlockAddress,
@@ -315,18 +379,23 @@ export async function createIdentity(
 }
 
 /**
- * 使用私钥对身份信息进行签名。
- *
- * 该函数首先对身份信息进行编码，然后使用传入的私钥对其进行签名，并将签名存储在身份对象中。
- *
- * @param privateKey - 用于签名的私钥（字符串格式）。
- * @param identity - 需要签名的身份信息对象（`Identity` 类型）。
- *
+ * 使用私钥对身份对象进行签名。
+ * 该函数首先清空身份对象的签名字段，然后对身份对象进行序列化并签名。
+ * 签名完成后，将签名值写回到身份对象的签名字段中。
+ * @param privateKey - 用于签名的私钥
+ * @param identity - 身份对象
+ * @returns 返回签名后的身份对象
  * @example
- * const privateKey = "your_private_key";
- * const identity = new Identity();
- * await signIdentity(privateKey, identity);
- * console.log(identity.signature);  // 输出签名
+ * ```ts
+ * const privateKey = 'example-private-key'
+ * const identity = {
+ *   metadata: { did: 'example-did', name: 'Example Identity' },
+ *   blockAddress: 'encrypted-block-address',
+ *   signature: ''
+ * }
+ * await signIdentity(privateKey, identity)
+ * console.log(identity.signature) // 签名后的值
+ * ```
  */
 export async function signIdentity(privateKey: string, identity: Identity) {
     identity.signature = ''
@@ -335,17 +404,23 @@ export async function signIdentity(privateKey: string, identity: Identity) {
 }
 
 /**
- * 验证身份的签名。
- *
- * 该函数检查身份对象的签名是否有效。它提取身份的签名，使用与身份关联的公钥和数据进行验证。
- * 如果签名有效，返回 `true`，否则返回 `false`。
- *
- * @param identity - 需要验证签名的身份对象，类型为 `Identity`。
- *
- * @returns 返回一个布尔值，表示身份签名是否有效。如果签名有效，返回 `true`，否则返回 `false`。
- *
- * @throws {Error} 如果验证过程中出现任何错误，将抛出异常。
- *
+ * 验证身份（Identity）对象的签名是否有效。
+ * 该函数通过以下步骤验证身份：
+ * 1. 从身份的 DID 中提取公钥。
+ * 2. 清空身份对象的签名字段，然后对身份对象进行序列化。
+ * 3. 使用公钥验证序列化后的身份对象的签名。
+ * @param identity - 身份对象
+ * @returns 如果签名有效，返回 true；否则返回 false
+ * @example
+ * ```ts
+ * const identity = {
+ *   metadata: { did: 'example-did', name: 'Example Identity' },
+ *   blockAddress: 'encrypted-block-address',
+ *   signature: 'example-signature'
+ * }
+ * const isValid = await verifyIdentity(identity)
+ * console.log(isValid) // 输出：true 或 false
+ * ```
  */
 export async function verifyIdentity(identity: Identity) {
     const signature = identity.signature
@@ -359,24 +434,20 @@ export async function verifyIdentity(identity: Identity) {
 }
 
 /**
- * 验证数据的签名。
- *
- * 该函数使用公钥和签名验证数据是否未被篡改。它通过哈希计算传入的数据，并与提供的签名进行匹配。
- *
- * @param publicKey - 用于验证签名的公钥，类型为 `string`。
- * @param data - 需要验证的数据，类型为 `Uint8Array`。
- * @param signature - 数据的签名，类型为 `string`。
- *
- * @returns 返回一个布尔值，表示签名是否有效。如果签名有效，返回 `true`，否则返回 `false`。
- *
- * @throws {Error} 如果验证过程失败，将抛出错误。
- *
+ * 验证数据的签名是否有效。
+ * 该函数首先计算数据的哈希值，然后使用公钥验证签名。
+ * @param publicKey - 用于验证的公钥
+ * @param data - 需要验证的数据（Uint8Array 格式）
+ * @param signature - 数据的签名
+ * @returns 如果签名有效，返回 true；否则返回 false
  * @example
- * const publicKey = "yourPublicKeyHere";
- * const data = new TextEncoder().encode("data to verify");
- * const signature = "signatureOfData";
- * const isValid = await verifyData(publicKey, data, signature);
- * console.log(isValid);  // 输出验证结果：true 或 false
+ * ```ts
+ * const publicKey = 'example-public-key'
+ * const data = new Uint8Array([1, 2, 3])
+ * const signature = 'example-signature'
+ * const isValid = await verifyData(publicKey, data, signature)
+ * console.log(isValid) // 输出：true 或 false
+ * ```
  */
 export async function verifyData(publicKey: string, data: Uint8Array, signature: string) {
     return await verifyHashBytes(publicKey, new Digest().update(data).sum(), signature)
@@ -384,18 +455,17 @@ export async function verifyData(publicKey: string, data: Uint8Array, signature:
 
 /**
  * 使用私钥对数据进行签名。
- *
- * 该函数将传入的数据进行哈希处理，并使用指定的私钥对数据的哈希值进行签名。
- *
- * @param privateKey - 用于签名的数据私钥（字符串格式）。
- * @param data - 需要签名的原始数据（`Uint8Array` 类型）。
- * @returns 返回签名后的数据（`Uint8Array` 类型）。
- *
+ * 该函数首先计算数据的哈希值，然后使用私钥对哈希值进行签名。
+ * @param privateKey - 用于签名的私钥
+ * @param data - 需要签名的数据（Uint8Array 格式）
+ * @returns 返回签名后的数据
  * @example
- * const privateKey = "your_private_key";
- * const data = new Uint8Array([1, 2, 3, 4, 5]);
- * const signedData = await signData(privateKey, data);
- * console.log(signedData);
+ * ```ts
+ * const privateKey = 'example-private-key'
+ * const data = new Uint8Array([1, 2, 3])
+ * const signature = await signData(privateKey, data)
+ * console.log(signature)
+ * ```
  */
 export async function signData(privateKey: string, data: Uint8Array) {
     return signHashBytes(privateKey, new Digest().update(data).sum())

@@ -15,19 +15,17 @@ export function decodeBase64(str: string) {
 }
 
 /**
- * 从 DID (Decentralized Identifier) 提取公钥。
- *
- * 该函数从给定的 DID 字符串中提取公钥部分。假设 DID 的格式包含冒号 `:`，并且公钥位于冒号后。
- * 如果 DID 为 `null` 或 `undefined`，则直接返回原始 DID。
- *
- * @param did - 需要提取公钥的 DID 字符串。
- *
- * @returns 返回提取的公钥（去除前缀 `0x`），如果 DID 为 `null` 或 `undefined`，则返回原始 DID。
- *
+ * 从 DID 中提取公钥。
+ * 该函数从 DID 字符串中提取公钥部分，并移除前缀（如 `0x`）。
+ * 如果输入的 DID 为 `undefined` 或 `null`，直接返回原值。
+ * @param did - DID 字符串
+ * @returns 返回提取后的公钥字符串
  * @example
- * const did = "did:example:abcdef12345";
- * const publicKey = fromDidToPublicKey(did);
- * console.log(publicKey);  // 输出：abcdef12345
+ * ```ts
+ * const did = 'did:yeying:0x123456789abcdef'
+ * const publicKey = fromDidToPublicKey(did)
+ * console.log(publicKey) // 输出：123456789abcdef
+ * ```
  */
 export function fromDidToPublicKey(did: string) {
     if (did === undefined || did === null) {
