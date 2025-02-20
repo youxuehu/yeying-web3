@@ -9,8 +9,8 @@ describe("Signature", () => {
         const hashBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", encodeString(content)))
         const signature = await signHashBytes(privateKey, hashBytes)
         console.log(`length=${signature.length}, signature=${signature}`)
-        const passed = verifyHashBytes(publicKey, hashBytes, signature)
-        expect(passed).toEqual(passed)
+        const passed = await verifyHashBytes(publicKey, hashBytes, signature)
+        expect(passed).toBeTruthy()
     })
 })
 
