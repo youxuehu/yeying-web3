@@ -30,13 +30,8 @@ export {
     BlockAddress, 
     Identity, 
     Mnemonic,
-    MessageFns, 
-    IdentityMetadata, 
+    IdentityMetadata,
     SecurityAlgorithm,
-    DeepPartial,
-    Exact,
-    Builtin,
-    KeysOfUnion
 } from './yeying/api/web3/web3'
 
 export { Digest } from './common/digest'

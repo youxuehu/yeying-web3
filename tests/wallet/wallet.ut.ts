@@ -187,7 +187,7 @@ describe("Identity", () => {
 
         const extendJson = {
             code: "SERVICE_CODE_WAREHOUSE",
-            apis: "API_CODE_USER,API_CODE_ASSET",
+            apiCodes: "API_CODE_USER,API_CODE_ASSET",
             proxy: "http://localhost:8641",
             grpc: "localhost:9301"
         }

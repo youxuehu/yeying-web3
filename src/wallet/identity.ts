@@ -257,7 +257,7 @@ export async function updateIdentity(
                 const serviceExtend = extend as IdentityServiceExtend
                 newIdentity.serviceExtend = IdentityServiceExtend.create({
                     code: serviceExtend.code ?? identity.serviceExtend?.code,
-                    apis: serviceExtend.apis ?? identity.serviceExtend?.apis,
+                    apiCodes: serviceExtend.apiCodes ?? identity.serviceExtend?.apiCodes,
                     proxy: serviceExtend.proxy ?? identity.serviceExtend?.proxy,
                     grpc: serviceExtend.grpc ?? identity.serviceExtend?.grpc,
                     extend: serviceExtend.extend ?? identity.serviceExtend?.extend

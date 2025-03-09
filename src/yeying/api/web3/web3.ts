@@ -168,7 +168,7 @@ export interface Mnemonic {
 export interface IdentityServiceExtend {
   code: string;
   /** 应用输出的api编码，用逗号隔开 */
-  apis: string;
+  apiCodes: string;
   proxy: string;
   grpc: string;
   extend: string;
@@ -945,7 +945,7 @@ export const Mnemonic: MessageFns<Mnemonic> = {
 };
 
 function createBaseIdentityServiceExtend(): IdentityServiceExtend {
-  return { code: "", apis: "", proxy: "", grpc: "", extend: "" };
+  return { code: "", apiCodes: "", proxy: "", grpc: "", extend: "" };
 }
 
 export const IdentityServiceExtend: MessageFns<IdentityServiceExtend> = {
@@ -953,8 +953,8 @@ export const IdentityServiceExtend: MessageFns<IdentityServiceExtend> = {
     if (message.code !== "") {
       writer.uint32(10).string(message.code);
     }
-    if (message.apis !== "") {
-      writer.uint32(18).string(message.apis);
+    if (message.apiCodes !== "") {
+      writer.uint32(18).string(message.apiCodes);
     }
     if (message.proxy !== "") {
       writer.uint32(26).string(message.proxy);
@@ -988,7 +988,7 @@ export const IdentityServiceExtend: MessageFns<IdentityServiceExtend> = {
             break;
           }
 
-          message.apis = reader.string();
+          message.apiCodes = reader.string();
           continue;
         }
         case 3: {
@@ -1027,7 +1027,7 @@ export const IdentityServiceExtend: MessageFns<IdentityServiceExtend> = {
   fromJSON(object: any): IdentityServiceExtend {
     return {
       code: isSet(object.code) ? globalThis.String(object.code) : "",
-      apis: isSet(object.apis) ? globalThis.String(object.apis) : "",
+      apiCodes: isSet(object.apiCodes) ? globalThis.String(object.apiCodes) : "",
       proxy: isSet(object.proxy) ? globalThis.String(object.proxy) : "",
       grpc: isSet(object.grpc) ? globalThis.String(object.grpc) : "",
       extend: isSet(object.extend) ? globalThis.String(object.extend) : "",
@@ -1039,8 +1039,8 @@ export const IdentityServiceExtend: MessageFns<IdentityServiceExtend> = {
     if (message.code !== "") {
       obj.code = message.code;
     }
-    if (message.apis !== "") {
-      obj.apis = message.apis;
+    if (message.apiCodes !== "") {
+      obj.apiCodes = message.apiCodes;
     }
     if (message.proxy !== "") {
       obj.proxy = message.proxy;
@@ -1060,7 +1060,7 @@ export const IdentityServiceExtend: MessageFns<IdentityServiceExtend> = {
   fromPartial<I extends Exact<DeepPartial<IdentityServiceExtend>, I>>(object: I): IdentityServiceExtend {
     const message = createBaseIdentityServiceExtend();
     message.code = object.code ?? "";
-    message.apis = object.apis ?? "";
+    message.apiCodes = object.apiCodes ?? "";
     message.proxy = object.proxy ?? "";
     message.grpc = object.grpc ?? "";
     message.extend = object.extend ?? "";
@@ -1512,7 +1512,7 @@ export const SecurityAlgorithm: MessageFns<SecurityAlgorithm> = {
   },
 };
 
-export type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
   : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
@@ -1520,7 +1520,7 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
-export type KeysOfUnion<T> = T extends T ? keyof T : never;
+type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
