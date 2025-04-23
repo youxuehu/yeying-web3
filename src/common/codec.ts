@@ -14,6 +14,14 @@ export function decodeBase64(str: string) {
     return Buffer.from(str, 'base64')
 }
 
+export function encodeHex(bytes: ArrayBuffer | Uint8Array) {
+    return Buffer.from(bytes).toString('hex')
+}
+
+export function decodeHex(str: string) {
+    return Buffer.from(str, 'hex')
+}
+
 /**
  * 从 DID 中提取公钥。
  * 该函数从 DID 字符串中提取公钥部分，并移除前缀（如 `0x`）。

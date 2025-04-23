@@ -12,27 +12,27 @@ export {
     serializeIdentityToJson,
     deserializeIdentityFromBinary,
     serializeIdentityToBinary
-} from './wallet/identity'
+} from "./wallet/identity"
 
-export { fromDidToPublicKey, encodeString, encodeBase64, decodeString, decodeBase64} from './common/codec'
-export { verifyHashBytes, signHashBytes } from './common/signature'
-export { IdentityTemplate } from './wallet/model'
-export { Digest } from './common/digest'
-export { generateKey, generateIv, exportKey, importKey, digest, encrypt, decrypt } from './common/crypto'
+export { fromDidToPublicKey, encodeString, encodeBase64, decodeString, decodeBase64, encodeHex, decodeHex, } from "./common/codec"
+export { verifyHashBytes, signHashBytes } from "./common/signature"
+export { IdentityTemplate } from "./wallet/model"
+export { Digest } from "./common/digest"
+export { generateKey, generateIv, exportKey, importKey, digest, encrypt, decrypt } from "./common/crypto"
 
 export {
-    IdentityCodeEnum, 
-    IdentityServiceExtend, 
-    IdentityOrganizationExtend, 
-    IdentityPersonalExtend, 
-    IdentityApplicationExtend, 
-    NetworkTypeEnum, 
-    Registry, 
-    SecurityConfig, 
-    BlockAddress, 
-    Identity, 
+    IdentityCodeEnum,
+    IdentityServiceExtend,
+    IdentityOrganizationExtend,
+    IdentityPersonalExtend,
+    IdentityApplicationExtend,
+    NetworkTypeEnum,
+    Registry,
+    SecurityConfig,
+    BlockAddress,
+    Identity,
     Mnemonic,
     IdentityMetadata,
-    SecurityAlgorithm,
-} from './yeying/api/web3/web3'
+    SecurityAlgorithm
+} from "./yeying/api/web3/web3"
 
