@@ -14,11 +14,13 @@ export {
     serializeIdentityToBinary
 } from './wallet/identity'
 
-export { fromDidToPublicKey } from './common/codec'
+export { fromDidToPublicKey, encodeString, encodeBase64, decodeString, decodeBase64} from './common/codec'
 export { verifyHashBytes, signHashBytes } from './common/signature'
 export { IdentityTemplate } from './wallet/model'
+export { Digest } from './common/digest'
+export { generateKey, generateIv, exportKey, importKey, digest, encrypt, decrypt } from './common/crypto'
 
-export { 
+export {
     IdentityCodeEnum, 
     IdentityServiceExtend, 
     IdentityOrganizationExtend, 
@@ -34,4 +36,3 @@ export {
     SecurityAlgorithm,
 } from './yeying/api/web3/web3'
 
-export { Digest } from './common/digest'
