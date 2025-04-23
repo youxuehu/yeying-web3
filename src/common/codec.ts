@@ -2,11 +2,11 @@ export function encodeString(s: string) {
     return new TextEncoder().encode(s)
 }
 
-export function decodeString(bytes: Uint8Array): string {
+export function decodeString(bytes: Uint8Array | ArrayBuffer): string {
     return new TextDecoder().decode(bytes)
 }
 
-export function encodeBase64(bytes: Uint8Array) {
+export function encodeBase64(bytes: Uint8Array | ArrayBuffer) {
     return Buffer.from(bytes).toString('base64')
 }
 
