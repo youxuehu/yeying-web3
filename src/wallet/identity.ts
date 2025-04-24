@@ -1,4 +1,4 @@
-import { fromDidToPublicKey, trimLeft } from '../common/codec'
+import { decodeBase64, encodeBase64, fromDidToPublicKey, trimLeft } from '../common/codec'
 import { computeAddress, defaultPath, HDNodeWallet, Wordlist, wordlists } from 'ethers'
 import {
     BlockAddress,
@@ -11,6 +11,7 @@ import {
     IdentityServiceExtend,
     Mnemonic,
     NetworkTypeEnum,
+    SecurityAlgorithm,
     SecurityConfig
 } from '../yeying/api/web3/web3'
 import { constructIdentifier, IdentityTemplate } from './model'
@@ -18,6 +19,7 @@ import { getCurrentUtcString } from '../common/date'
 import { Digest } from '../common/digest'
 import { signHashBytes, verifyHashBytes } from '../common/signature'
 import elliptic from 'elliptic'
+import { convertToAlgorithmName, decrypt, digest, encrypt, generateIv, importKey } from '../common/crypto'
 
 /**
  * 将身份（Identity）对象序列化为二进制数据。
@@ -203,16 +205,19 @@ export function createBlockAddress(
  * console.log(updatedIdentity)
  * ```
  */
-export async function updateIdentity(
-    template: Partial<IdentityTemplate>,
-    identity: Identity,
-    blockAddress: BlockAddress
-) {
+export async function updateIdentity(template: Partial<IdentityTemplate>, identity: Identity, password: string) {
     // 判断身份是否有效
     let isValid = await verifyIdentity(identity)
     if (!isValid) {
         throw new Error('Invalid identity!')
     }
+
+    // 解密区块链地址
+    const blockAddress = await decryptBlockAddress(
+        identity.blockAddress,
+        identity.securityConfig?.algorithm as SecurityAlgorithm,
+        password
+    )
 
     // 克隆身份
     const newIdentity: Identity = Identity.decode(Identity.encode(identity).finish())
@@ -296,17 +301,18 @@ export async function updateIdentity(
 }
 
 /**
- * 创建一个新的身份（）。
+ * 创建一个新的身份。
  * 该函数根据提供的 BlockAddress、加密的 BlockAddress 和身份模板生成一个身份对象。
  * 身份对象包含元数据、扩展信息和安全配置，并通过私钥签名验证。
- * @param blockAddress - 包含 DID、地址和私钥的 BlockAddress 对象
- * @param encryptedBlockAddress - 加密后的 BlockAddress 字符串
- * @param template - 身份模板，包含身份的基本信息和扩展信息
- * @returns 返回创建的身份对象
+ *
+ * @param template 身份模板，包含身份的基本信息和扩展信息
+ * @param password 身份的加密密码
+ *
+ * @returns 身份对象，区块链地址是加密状态
+ *
  * @example
  * ```ts
- * const blockAddress = { identifier: 'example-did', address: 'example-address', privateKey: 'example-private-key' }
- * const encryptedBlockAddress = 'encrypted-block-address-string'
+ * const password = '<Your password for block address of identity>'
  * const template = {
  *   network: 'NETWORK_TYPE_YEYING',
  *   name: 'Example Identity',
@@ -314,15 +320,29 @@ export async function updateIdentity(
  *   code: IdentityCodeEnum.IDENTITY_CODE_PERSONAL,
  *   extend: { ' 扩展信息 ' }
  * }
- * const identity = await createIdentity(blockAddress, encryptedBlockAddress, template)
+ *
+ * const identity = await createIdentity(template, password)
+ *
  * console.log(identity)
  * ```
  */
-export async function createIdentity(
-    blockAddress: BlockAddress,
-    encryptedBlockAddress: string,
-    template: IdentityTemplate
-) {
+export async function createIdentity(template: IdentityTemplate, password: string) {
+    // 创建区块链地址
+    const blockAddress = createBlockAddress()
+    if (template.securityConfig === undefined) {
+        // 如果没有定义安全配置，则创建一个空的安全配置
+        template.securityConfig = {
+            algorithm: generateSecurityAlgorithm()
+        }
+    }
+
+    // 使用密码和安全算法加密区块链地址
+    const encryptedBlockAddress = await encryptBlockAddress(
+        blockAddress,
+        template.securityConfig.algorithm as SecurityAlgorithm,
+        password
+    )
+
     const metadata = IdentityMetadata.create({
         network: template.network,
         did: blockAddress.identifier,
@@ -350,16 +370,16 @@ export async function createIdentity(
     if (template.extend) {
         switch (metadata.code) {
             case IdentityCodeEnum.IDENTITY_CODE_APPLICATION:
-                identity.applicationExtend = IdentityApplicationExtend.create(template.extend)
+                identity.applicationExtend = IdentityApplicationExtend.create(template.extend ?? {})
                 break
             case IdentityCodeEnum.IDENTITY_CODE_SERVICE:
-                identity.serviceExtend = IdentityServiceExtend.create(template.extend)
+                identity.serviceExtend = IdentityServiceExtend.create(template.extend ?? {})
                 break
             case IdentityCodeEnum.IDENTITY_CODE_ORGANIZATION:
-                identity.organizationExtend = IdentityOrganizationExtend.create(template.extend)
+                identity.organizationExtend = IdentityOrganizationExtend.create(template.extend ?? {})
                 break
             case IdentityCodeEnum.IDENTITY_CODE_PERSONAL:
-                identity.personalExtend = IdentityPersonalExtend.create(template.extend)
+                identity.personalExtend = IdentityPersonalExtend.create(template.extend ?? {})
                 break
             default:
                 throw new Error(`Not supported identity code=${template.code}`)
@@ -368,13 +388,6 @@ export async function createIdentity(
 
     // 签名身份
     await signIdentity(blockAddress.privateKey, identity)
-
-    // 验证公私钥是否匹配
-    const isValid = await verifyIdentity(identity)
-    if (!isValid) {
-        throw new Error('Invalid blockAddress!')
-    }
-
     return identity
 }
 
@@ -456,8 +469,10 @@ export async function verifyData(publicKey: string, data: Uint8Array, signature:
 /**
  * 使用私钥对数据进行签名。
  * 该函数首先计算数据的哈希值，然后使用私钥对哈希值进行签名。
- * @param privateKey - 用于签名的私钥
- * @param data - 需要签名的数据（Uint8Array 格式）
+ *
+ * @param privateKey  用于签名的私钥
+ * @param data 需要签名的数据（Uint8Array 格式）
+ *
  * @returns 返回签名后的数据
  * @example
  * ```ts
@@ -469,6 +484,62 @@ export async function verifyData(publicKey: string, data: Uint8Array, signature:
  */
 export async function signData(privateKey: string, data: Uint8Array) {
     return signHashBytes(privateKey, new Digest().update(data).sum())
+}
+
+/**
+ * 加密区块链地址
+ *
+ * @param blockAddress 区块链地址结构体
+ * @param securityAlgorithm 加密算法
+ * @param password 密钥
+ *
+ * @returns 返回加密后的字符串，使用base64编码
+ */
+export async function encryptBlockAddress(
+    blockAddress: BlockAddress,
+    securityAlgorithm: SecurityAlgorithm,
+    password: string
+) {
+    const algorithmName = convertToAlgorithmName(securityAlgorithm.name)
+    const hashBytes = await digest(new TextEncoder().encode(password), 'SHA-256')
+    const cryptoKey = await importKey(hashBytes, algorithmName)
+    const cipher = await encrypt(
+        cryptoKey,
+        BlockAddress.encode(blockAddress).finish(),
+        decodeBase64(securityAlgorithm.iv),
+        algorithmName
+    )
+    return encodeBase64(cipher)
+}
+
+export function generateSecurityAlgorithm(algorithmName: string = 'AES-GCM') {
+    return SecurityAlgorithm.create({ name: algorithmName, iv: encodeBase64(generateIv(12)) })
+}
+
+/**
+ * 解密区块链地址
+ *
+ * @param blockAddress 加密后的区块链地址，使用base64编码
+ * @param securityAlgorithm 解密算法
+ * @param password 密钥
+ *
+ * @returns 返回区块链地址结构
+ */
+export async function decryptBlockAddress(
+    blockAddress: string,
+    securityAlgorithm: SecurityAlgorithm,
+    password: string
+) {
+    const algorithmName = convertToAlgorithmName(securityAlgorithm.name)
+    const hashBytes = await digest(new TextEncoder().encode(password), 'SHA-256')
+    const cryptoKey = await importKey(hashBytes, algorithmName)
+    const plain = await decrypt(
+        cryptoKey,
+        decodeBase64(blockAddress),
+        decodeBase64(securityAlgorithm.iv),
+        algorithmName
+    )
+    return BlockAddress.decode(new Uint8Array(plain))
 }
 
 function buildBlockAddress(networkType: NetworkTypeEnum, wallet: HDNodeWallet, path: string): BlockAddress {

@@ -91,23 +91,11 @@ describe("Identity", () => {
     })
 
     it("sign and verify identity", async () => {
-        const blockAddress = createBlockAddress()
-        const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
-
         const extend = IdentityApplicationExtend.create({
             code: "APPLICATION_CODE_WAREHOUSE",
             serviceCodes: "SERVICE_CODE_WAREHOUSE,SERVICE_CODE_AGENT",
             location: "location1",
             hash: "hash1"
-        })
-
-        const algorithm = SecurityAlgorithm.create({
-            name: "CIPHER_TYPE_AES_GCM_256",
-            iv: encodeBase64(iv)
-        })
-
-        const securityConfig = SecurityConfig.create({
-            algorithm: algorithm
         })
 
         const template: IdentityTemplate = {
@@ -119,22 +107,15 @@ describe("Identity", () => {
             description: "description1",
             avatar: "avatar1",
             extend: extend,
-            securityConfig: securityConfig
         }
 
-        const identity = await createIdentity(
-            blockAddress,
-            encryptedBlockAddress,
-            template)
+        const identity = await createIdentity(template, password)
 
         const success = await verifyIdentity(identity)
         expect(success).toBeTruthy()
     })
 
     it("update identity", async () => {
-        const blockAddress = createBlockAddress()
-        const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
-
         const algorithm = SecurityAlgorithm.create({
             name: "CIPHER_TYPE_AES_GCM_256",
             iv: encodeBase64(iv)
@@ -160,10 +141,7 @@ describe("Identity", () => {
             securityConfig: securityConfig
         }
 
-        const identity = await createIdentity(
-            blockAddress,
-            encryptedBlockAddress,
-            template)
+        const identity = await createIdentity(template, password)
 
         const newTemplate = {
             name: "name2",
@@ -173,7 +151,7 @@ describe("Identity", () => {
             }
         }
 
-        const newIdentity = await updateIdentity(newTemplate, identity, blockAddress)
+        const newIdentity = await updateIdentity(newTemplate, identity, password)
         expect(newIdentity.metadata?.name).toEqual("name2")
         expect(newIdentity.metadata?.avatar).toEqual("avatar1")
         expect(newIdentity.personalExtend?.email).toEqual("email1")
@@ -182,9 +160,6 @@ describe("Identity", () => {
     })
 
     it("serialize and deserialize identity", async () => {
-        const blockAddress = createBlockAddress()
-        const encryptedBlockAddress = await encryptBlockAddress(blockAddress, new Digest().update(new TextEncoder().encode(password)).sum())
-
         const extendJson = {
             code: "SERVICE_CODE_WAREHOUSE",
             apiCodes: "API_CODE_USER,API_CODE_ASSET",
@@ -218,10 +193,7 @@ describe("Identity", () => {
             securityConfig: securityConfig
         }
 
-        const identity = await createIdentity(
-            blockAddress,
-            encryptedBlockAddress,
-            template)
+        const identity = await createIdentity(template, password)
 
         const success = await verifyIdentity(identity)
         expect(success).toBeTruthy()

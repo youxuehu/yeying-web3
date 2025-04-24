@@ -1,6 +1,8 @@
 export {
     deriveFromBlockAddress,
     createBlockAddress,
+    encryptBlockAddress,
+    decryptBlockAddress,
     createIdentity,
     recoveryFromMnemonic,
     signData,
@@ -12,13 +14,21 @@ export {
     serializeIdentityToJson,
     deserializeIdentityFromBinary,
     serializeIdentityToBinary
-} from "./wallet/identity"
+} from './wallet/identity'
 
-export { fromDidToPublicKey, encodeString, encodeBase64, decodeString, decodeBase64, encodeHex, decodeHex, } from "./common/codec"
-export { verifyHashBytes, signHashBytes } from "./common/signature"
-export { IdentityTemplate } from "./wallet/model"
-export { Digest } from "./common/digest"
-export { generateKey, generateIv, exportKey, importKey, digest, encrypt, decrypt } from "./common/crypto"
+export {
+    fromDidToPublicKey,
+    encodeString,
+    encodeBase64,
+    decodeString,
+    decodeBase64,
+    encodeHex,
+    decodeHex
+} from './common/codec'
+export { verifyHashBytes, signHashBytes } from './common/signature'
+export { IdentityTemplate } from './wallet/model'
+export { Digest } from './common/digest'
+export { generateKey, generateIv, exportKey, importKey, digest, encrypt, decrypt } from './common/crypto'
 
 export {
     IdentityCodeEnum,
@@ -34,5 +44,4 @@ export {
     Mnemonic,
     IdentityMetadata,
     SecurityAlgorithm
-} from "./yeying/api/web3/web3"
-
+} from './yeying/api/web3/web3'
