@@ -1,5 +1,6 @@
 import { decrypt, digest, encrypt, exportKey, generateIv, generateKey, importKey } from "../../src/common/crypto"
 import { decodeString, encodeString } from "../../src/common/codec"
+import { InvalidPassword } from "../../src"
 
 describe("Crypto", () => {
     it("encrypt and decrypt", async function() {
@@ -32,5 +33,19 @@ describe("Crypto", () => {
         const cipherText = await encrypt(cryptoKey, encodeString(plainText), iv, algorithmName)
         const result = await decrypt(cryptoKey, cipherText, iv, algorithmName)
         expect(decodeString(result)).toEqual(plainText)
+    })
+
+    it('invalid password', async () => {
+        const plainText = "hello world"
+        const algorithmName = "AES-GCM"
+
+        const password1 = "password1"
+        const cryptoKey1 = await importKey(await digest(password1), algorithmName)
+        const iv = generateIv(12)
+        const cipherText = await encrypt(cryptoKey1, encodeString(plainText), iv, algorithmName)
+
+        const password2 = "password2"
+        const cryptoKey2 = await importKey(await digest(password2), algorithmName)
+        await expect(decrypt(cryptoKey2, cipherText, iv, algorithmName)).rejects.toThrow(InvalidPassword)
     })
 })

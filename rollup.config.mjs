@@ -1,7 +1,8 @@
-import typescript from 'rollup-plugin-typescript2'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import json from "@rollup/plugin-json"
+import typescript from '@rollup/plugin-typescript'
+
 export default {
     input: './src/index.ts',
     output: [
@@ -27,7 +28,7 @@ export default {
         warn(warning);
     },
     plugins: [
-        typescript(),
+        typescript({include: ["src/**/*.ts"], exclude: ["node_modules", "**/*.ut.ts", "**/*.it.ts"]}),
         resolve({browser: true}),
         commonjs(),
         json()

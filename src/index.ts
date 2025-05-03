@@ -45,3 +45,5 @@ export {
     IdentityMetadata,
     SecurityAlgorithm
 } from './yeying/api/web3/web3'
+
+export { InvalidPassword } from './common/error'

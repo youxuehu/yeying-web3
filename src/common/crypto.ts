@@ -1,4 +1,5 @@
 import { encodeString } from './codec'
+import { InvalidPassword } from './error'
 
 type AlgorithmIdentifier = string | { name: string }
 type BufferSource = ArrayBuffer | DataView
@@ -70,6 +71,16 @@ export async function generateKey(
     return crypto.subtle.generateKey(param, true, ['encrypt', 'decrypt'] as KeyUsages)
 }
 
+/**
+ * 加密明文获得密文
+ *
+ * @param key - 加密密钥
+ * @param data - 要加密的数据
+ * @param iv - 初始化向量
+ * @param algorithm - 加密算法名称
+ *
+ * @returns 密文
+ */
 export async function encrypt(
     key: CryptoKey,
     data: string | BufferSource,
@@ -84,6 +95,19 @@ export async function encrypt(
     return await crypto.subtle.encrypt(param, key, encodedData)
 }
 
+/**
+ *
+ * 解密密文获得明文
+ *
+ * @param key - 解密密钥
+ * @param data - 要解密的数据
+ * @param iv - 初始化向量
+ * @param algorithm - 解密算法，默认使用AES-GCM
+ *
+ * @returns 返回解密后的明文信息
+ *
+ * @throws {InvalidPassword} 当密码不正确时抛出此异常
+ */
 export async function decrypt(
     key: CryptoKey,
     data: BufferSource,
@@ -94,5 +118,9 @@ export async function decrypt(
         name: typeof algorithm === 'string' ? algorithm : algorithm.name,
         iv
     } as AesGcmParams
-    return await crypto.subtle.decrypt(param, key, data)
+    try {
+        return await crypto.subtle.decrypt(param, key, data)
+    } catch (Error) {
+        throw new InvalidPassword()
+    }
 }
