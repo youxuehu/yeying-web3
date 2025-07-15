@@ -1,3 +1,21 @@
+function getBuffer(): typeof Buffer {
+    if (typeof window !== 'undefined' && window.Buffer) {
+        return window.Buffer
+    }
+    if (typeof globalThis !== 'undefined' && globalThis.Buffer) {
+        return globalThis.Buffer
+    }
+    try {
+        // 浏览器环境中可能未定义 Buffer，此时应动态引入 polyfill
+        const { Buffer } = require('buffer')
+        return Buffer
+    } catch (e) {
+        throw new Error('Buffer is not available in the current environment')
+    }
+}
+
+const buffer = getBuffer()
+
 export function encodeString(s: string) {
     return new TextEncoder().encode(s)
 }
@@ -7,19 +25,19 @@ export function decodeString(bytes: Uint8Array | ArrayBuffer): string {
 }
 
 export function encodeBase64(bytes: Uint8Array | ArrayBuffer) {
-    return Buffer.from(bytes).toString('base64')
+    return buffer.from(bytes).toString('base64')
 }
 
 export function decodeBase64(str: string) {
-    return Buffer.from(str, 'base64')
+    return buffer.from(str, 'base64')
 }
 
 export function encodeHex(bytes: ArrayBuffer | Uint8Array) {
-    return Buffer.from(bytes).toString('hex')
+    return buffer.from(bytes).toString('hex')
 }
 
 export function decodeHex(str: string) {
-    return Buffer.from(str, 'hex')
+    return buffer.from(str, 'hex')
 }
 
 /**
