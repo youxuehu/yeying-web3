@@ -1,6 +1,6 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "author": "yeying.community@gmail.com",
   "description": "A web3 crypto library",
   "main": "dist/yeying-web3.cjs.js",
@@ -44,7 +44,7 @@
     "elliptic": "^6.6.1",
     "ethers": "^6.13.4",
     "google-protobuf": "^3.21.4",
-    "luxon": "^3.6.1",
+    "luxon": "^3.7.1",
     "ts-proto": "^2.7.0"
   },
   "devDependencies": {
