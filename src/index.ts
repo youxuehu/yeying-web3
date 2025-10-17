@@ -48,3 +48,7 @@ export {
 
 export * from './common/error'
 export * from "./common/date"
+export * from './types';
+export * from './waku/client';
+export * from './crypto';
+export * from './utils/jwt';
