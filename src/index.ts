@@ -48,3 +48,14 @@ export {
 
 export * from './common/error'
 export * from "./common/date"
+
+export * from './shared/types/common';
+export * from './shared/types/crypto';
+export * from './shared/types/pairing';
+export * from './shared/types/relay';
+export * from './shared/types/session';
+
+export * from './shared/client/dapp';
+export * from './shared/client/wallet';
+
+export * from './shared/utils/pairing-uri';
