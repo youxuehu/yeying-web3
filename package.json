@@ -1,6 +1,6 @@
 {
   "name": "@yeying-community/yeying-web3",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "author": "yeying.community@gmail.com",
   "description": "A web3 crypto library",
   "main": "dist/yeying-web3.cjs.js",
@@ -45,7 +45,9 @@
     "ethers": "^6.13.4",
     "google-protobuf": "^3.21.4",
     "luxon": "^3.7.1",
-    "ts-proto": "^2.7.0"
+    "ts-proto": "^2.7.0",
+    "@waku/sdk": "^0.0.35",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
@@ -60,6 +62,7 @@
     "rollup": "^4.28.1",
     "ts-jest": "^29.2.5",
     "typedoc": "^0.27.6",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@types/jsonwebtoken": "^9.0.3"
   }
 }
