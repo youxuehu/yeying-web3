@@ -59,3 +59,5 @@ export * from './shared/client/dapp';
 export * from './shared/client/wallet';
 
 export * from './shared/utils/pairing-uri';
+
+export * from './wallet/auth'

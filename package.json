@@ -47,7 +47,8 @@
     "luxon": "^3.7.1",
     "ts-proto": "^2.7.0",
     "@waku/sdk": "^0.0.35",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "element-plus": "^2.9.11"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
